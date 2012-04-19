@@ -1,0 +1,82 @@
+/* CSS declarations go here */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+#content {
+  float: left;
+  .current {
+    background: #ECC6EC;
+  }
+  .day {
+    display: block;
+    height: 50px;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid #CCC;
+    .stop, .order {
+      margin-left: 30px;
+      height: 100%;
+      width: auto;
+      float: left;
+      padding-top: 18px;
+      line-height: 1;
+    }
+    .stop {
+      margin-left: 8px;
+    }
+  }
+  .destroy {
+    position: absolute;
+    left: 5px;
+    top: 15px;
+    height: 20px;
+    width: 20px;
+  }
+  .move_up, .move_dn, .directions {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    height: 12px;
+    width: 12px;
+  }
+  .move_dn {
+    right: 5px;
+  }
+  .directions {
+    right: 50px;
+  }
+  .day:hover {
+    background-color: #B395DC;
+    .destroy {
+      background: url('/destroy.png') no-repeat 0 0;
+    }
+    .destroy:hover {
+      background-position:0 -20px;
+    }
+    .move_up {
+      background: url('/gh-icons.png') no-repeat 0 0;
+    }
+    .move_up:hover {
+      background-position: -12px 0;
+    }
+    .move_dn {
+      background: url('/gh-icons.png') no-repeat 0 -12px;
+    }
+    .move_dn:hover {
+      background-position: -12px -12px;
+    }
+    .directions {
+      background: url('/gh-icons.png') no-repeat 0 -36px;
+    }
+    .directions:hover {
+      background-position: -12px -36px;
+    }
+  }
+}
+#map_canvas {
+  float: right;
+  width: 500px;
+  height: 350px;
+}

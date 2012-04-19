@@ -1,0 +1,50 @@
+<head>
+  <script type="text/javascript"
+    src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDEljhoD7LjZfNplwV2zAjx1onw6rMjj6o&sensor=false">
+  </script>
+  <title>touring</title>
+</head>
+
+<body>
+  <div id='content'>
+    {{> header}}
+    {{> days}}
+  </div>
+  <div id="map_canvas" ></div>
+</body>
+
+<template name="header">
+  <div class="header">
+    <h1>{{greeting}}</h1>
+  </div>
+</template>
+
+<template name="days">
+<div>
+  <input type='button' id='sort_lat' value='Sort by lat' />
+  <input type='button' id='sort_lng' value='Sort by lng' />
+  <input type='button' id='sort_order' value='Sort by custom order' />
+  <input type='button' id='reset_days' value='Reset Days' />
+  </br>
+  <input id='new_day_stop' placeholder='ottawa, TN' />
+  <input type='button' id='new_day' value='New Day'/>
+  <ul class="days">
+    {{#each days}}
+      {{> day}}
+    {{/each}}
+  </ul>
+</div>
+</template>
+
+<template name="day">
+<li class="day{{current}}" id={{_id}}>
+  <span class="destroy"></span>
+  <span class="order">{{order}}</span>
+  <span class="stop"> {{stop}} </span>
+  {{#if sort_by_order}}
+  <span class="directions"></span>
+  <span class="move_up"></span>
+  <span class="move_dn"></span>
+  {{/if}}
+</li>
+</template>
