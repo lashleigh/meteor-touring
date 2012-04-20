@@ -2,6 +2,7 @@ var Days = new Meteor.Collection('days');
 var rendererOptions = {
   draggable: true,
   suppressInfoWindows: true,
+  preserveViewport: false,
   markerOptions: {draggable: false}
 };
 var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);

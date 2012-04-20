@@ -18,8 +18,13 @@ function coords_to_google_waypoints(day) {
   if(!day.waypoints) return [];
   return day.waypoints.map(function(c){return {location: coords_to_google_point(c), stopover:false}}); 
 }
+function calc_route_for_first_day() {
+  console.log('first day rocks');
+}
 function calc_route_with_stopover(day) {
   var prev_day = Days.findOne({order: day.order-1});
+  if(!prev_day) { calc_route(day); return;}
+  if(!Days.findOne({order:day.order+1})) {calc_route(prev_day); return};
   var waypoints = coords_to_google_waypoints(prev_day).concat({location: latlng_from_day(day), stopover: true}, coords_to_google_waypoints(day));
   var request = {
     origin: latlng_from_day(prev_day),  
@@ -31,42 +36,53 @@ function calc_route_with_stopover(day) {
   }
   directionsService.route(request, standardDirectionsDisplay);
   google.maps.event.removeListener(directions_change_listener);
-  directionsDisplay.setOptions({markerOptions: {draggable: true}})
+  directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: true})
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
-    var legs_0 = directionsDisplay.directions.routes[0].legs[0];
-    var legs_1 = directionsDisplay.directions.routes[0].legs[1];
-    var waypoints_0 = legs_0.via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
-    var waypoints_1 = legs_1.via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
-    var polyline_0  = google.maps.geometry.encoding.encodePath(_.flatten(_.pluck(legs_0.steps, 'path')));
-    var polyline_1  = google.maps.geometry.encoding.encodePath(_.flatten(_.pluck(legs_1.steps, 'path')));
-    var day_1 = Days.findOne({order: Days.findOne(Session.get('current')).order - 1})
-    munge_update(day_1._id, {$set: {polyline: polyline_0, waypoints: waypoints_0}});
-    munge_update(Session.get('current'), {$set: {polyline: polyline_1, waypoints: waypoints_1, lat:legs_0.end_location.lat(), lng: legs_0.end_location.lng()}});
+    var route = directionsDisplay.directions.routes[0];
+    if((Session.get('directions').routes[0].legs[0].start_address !== route.legs[0].start_address) ||
+       (Session.get('directions').routes[0].legs[1].end_address   !== route.legs[1].end_address )) {
+      console.log('innapropriate drag');
+      directionsDisplay.setDirections(Session.get('directions'))
+    } else {
+      var legs_0 = route.legs[0]; var legs_1 = route.legs[1];
+      var waypoints_0 = legs_0.via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
+      var waypoints_1 = legs_1.via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
+      var polyline_0  = google.maps.geometry.encoding.encodePath(_.flatten(_.pluck(legs_0.steps, 'path')));
+      var polyline_1  = google.maps.geometry.encoding.encodePath(_.flatten(_.pluck(legs_1.steps, 'path')));
+      var day_1 = Days.findOne({order: Days.findOne(Session.get('current')).order - 1})
+      munge_update(day_1._id, {$set: {polyline: polyline_0, waypoints: waypoints_0}});
+      munge_update(Session.get('current'), {$set: {polyline: polyline_1, waypoints: waypoints_1, lat:legs_0.end_location.lat(), lng: legs_0.end_location.lng()}});
+      Session.set('directions', directionsDisplay.directions);
+    }
   });
 
 }
 function calc_route(day) {
+  var next_day = Days.findOne({order: day.order+1});
+  console.log('route day', day);
+  if(!next_day) {  markers[day._id].setDraggable(false); calc_route(Days.findOne({order: day.order -1}));return};
+  console.log('route day', day);
   var request = {
     origin: latlng_from_day(day),  
-    destination: latlng_from_day(Days.findOne({order: day.order+1})),
-    waypoints: coords_to_google_waypoints(),
+    destination: latlng_from_day(next_day),
+    waypoints: coords_to_google_waypoints(day),
     optimizeWaypoints: true,
     travelMode: google.maps.TravelMode[day.travelMode || 'BICYCLING'],
     unitSystem: google.maps.UnitSystem['IMPERIAL']
   }
   directionsService.route(request, standardDirectionsDisplay);
   google.maps.event.removeListener(directions_change_listener);
-  directionsDisplay.setOptions({markerOptions: {draggable: false}})
+  directionsDisplay.setOptions({markerOptions: {draggable: false}, preserveViewport: false})
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var waypoints = directionsDisplay.directions.routes[0].legs[0].via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
     var polyline  = directionsDisplay.directions.routes[0].overview_polyline.points;
-    munge_update(Session.get('current'), {$set: {polyline: polyline, waypoints: waypoints}});
+    munge_update(day._id, {$set: {polyline: polyline, waypoints: waypoints}});
   });
 }
 function standardDirectionsDisplay(response, status) {
   if (status == google.maps.DirectionsStatus.OK) {
 
-    Session.set('directions', response.routes[0]);
+    Session.set('directions', response);
     directionsDisplay.setMap(map)
     directionsDisplay.setDirections(response);
     directionsDisplay.setPanel($('.day_details')[0]);
