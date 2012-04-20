@@ -1,10 +1,12 @@
-Days = new Meteor.Collection('days');
+var Days = new Meteor.Collection('days');
 var rendererOptions = {
   draggable: true,
-  suppressInfoWindows: true
+  suppressInfoWindows: true,
+  markerOptions: {draggable: false}
 };
 var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
 var directionsService = new google.maps.DirectionsService();
+var directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {}) ;
 var map;
 var markers = {};
 var geocoder = new google.maps.Geocoder;
@@ -20,7 +22,8 @@ Meteor.startup(function() {
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
     map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-  })
+    new google.maps.BicyclingLayer().setMap(map);
+  });
   var handle = Days.find().observe({
     added: function(new_day, prior_count) {
       if_console('added', new_day, prior_count);
@@ -28,12 +31,19 @@ Meteor.startup(function() {
       var marker = new google.maps.Marker({
         animation: google.maps.Animation.DROP,
         map: map, 
-        draggable: true, 
+        draggable: false, 
         title: new_day.stop, 
-        icon: Session.get('current') === new_day._id ? icon('00f', 'o') : null
+        icon: Session.get('current') === new_day._id ? current_icon : null,
+        icon: Session.get('hovered') === new_day._id ? current_icon : null
       })
       markers[new_day._id] = marker;
       marker.day_id = new_day._id;
+      if(new_day.polyline) {
+        marker.polyline = new google.maps.Polyline({
+          path: google.maps.geometry.encoding.decodePath(new_day.polyline),
+          map: map
+        })
+      }
       new google.maps.event.addListener(marker, 'click', function(e) {
         //Session.set('current', marker.day_id);
         make_current(marker.day_id);
@@ -59,9 +69,13 @@ Meteor.startup(function() {
     }, 
     changed: function(day, at_index, old_day) {
       if_console('changed', day, old_day);
-      /*if(day.lat !== old_day.lat || day.lng !== old_day.lng) {
+      if(day.lat !== old_day.lat || day.lng !== old_day.lng) {
         markers[day._id].setPosition(new google.maps.LatLng(day.lat, day.lng));
-      }*/
+        calc_route_with_stopover(day);
+      }
+      if(day.polyline && (day.polyline !== old_day.polyline)) {
+        markers[day._id].polyline.setPath(google.maps.geometry.encoding.decodePath(day.polyline)); 
+      }
     },
     moved: function(day, old_index, new_index) {
       if_console('moved', day, old_index, new_index);
@@ -71,6 +85,7 @@ Meteor.startup(function() {
       if(is_current(old_day._id)) {Session.set('current', null)}
       var marker = markers[old_day._id];
       marker.setMap(null);
+      marker.polyline.setMap(null);
       google.maps.event.clearInstanceListeners(marker);
       delete markers[old_day._id];
     }

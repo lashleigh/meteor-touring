@@ -6,7 +6,7 @@ Template.days.days = function() {
   return Days.find({}, {sort: Session.get('sort')});
 };
 Template.days.events = {
-  'click input#new_day': function() {
+  'click input#new_day_button': function() {
     var stop = $('#new_day_stop').val().replace(/(^\s+|\s+$)/g,'');
     if(stop.length > 5) {
       Days.insert({stop: stop, order: Days.find().count()+1, created_at: Date.now()});
@@ -46,20 +46,23 @@ Template.day.sort_by_order = function() {
 Template.day.current = function() {
   return Session.get('current') === this._id ? ' current' : '';
 }
+Template.day.is_current = function() {
+  return !!(Session.get('current') === this._id);
+}
 Template.day.events = {
   'click' : function (e) {
     // template data, if any, is available in 'this'
     make_current(this._id)
   },
   'mouseover': function() {
-    if(Session.get('current') !== this._id) {
-      Session.set('hovered', this._id);
-      markers[this._id].setIcon(icon('59308F', ''));
-    }
+    Session.set('hovered', this._id);
+    markers[this._id].setIcon(hover_icon);
   },
   'mouseout': function() {
-    if(Session.get('current') !== this._id) {
-      Session.set('hovered', null);
+    Session.set('hovered', null);
+    if(Session.get('current') == this._id) {
+      markers[this._id].setIcon(current_icon);
+    } else {
       markers[this._id].setIcon(null);
     }
   },
@@ -72,11 +75,11 @@ Template.day.events = {
     adjust_order_after_remove(this);
   },
   'click .move_up': function(e) {
-    e.stopPropagation();
+    //e.stopPropagation();
     move_one(this, -1);
   },
   'click .move_dn': function(e) {
-    e.stopPropagation();
+    //e.stopPropagation();
     move_one(this, 1);
   },
   'click .directions': function(e) {
