@@ -125,23 +125,23 @@ function added(new_day, prior_count) {
     map: map,
     strokeOpacity: 0.5,
     strokeWeight: 3
-  })
+  });
   if(new_day.polyline) { marker.polyline.setPath(google.maps.geometry.encoding.decodePath(new_day.polyline)); }
   new google.maps.event.addListener(marker, 'click', function(e) {
     make_current(marker.day_id);
   });
   new google.maps.event.addListener(marker, 'dragend', function(e) {
-    var day = Days.findOne({_id:marker.day_id});
-    update_by_merging(day, {lat: e.latLng.lat(), lng: e.latLng.lng()})
+    var day = Days.findOne(marker.day_id);
+    day.lat = e.latLng.lat();
+    day.lng = e.latLng.lng();
+    update_by_merging(day, {lat: day.lat, lng: day.lng})
     calc_route_with_stopover(day);
   });
   if(new_day.lat && new_day.lng) {
     var latlng = new google.maps.LatLng(new_day.lat, new_day.lng)
     marker.setPosition(latlng);
-    bounds.extend(marker.getPosition());
-    map.fitBounds(bounds);
     if(!new_day.address) {
-      reverse_geocode(new_day, latlng)
+      reverse_geocode(new_day, latlng);
     }
   } else {
     geocode(new_day);

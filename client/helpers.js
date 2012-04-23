@@ -29,8 +29,8 @@ function adjust_order_after_remove(old_day) {
   var prev_day = Days.findOne({order: old_day.order -1});
   var next_day = Days.findOne({order: old_day.order +1});
   munge_update({order: {$gte: old_day.order}}, {$inc : {order: -1}}, {multi: true});
-  if(!next_day) {
-    munge_update(prev_day._id, {$set : {polyline: null, waypoints: [], distance: null}});
+  if(!next_day && prev_day) {
+    munge_update(prev_day._id, {$set : {polyline: '', waypoints: [], distance: 0}});
   } else if(next_day && prev_day) {
     var new_path = decodePath(prev_day.polyline).concat(decodePath(old_day.polyline));
     var new_poly = google.maps.geometry.encoding.encodePath(new_path);
