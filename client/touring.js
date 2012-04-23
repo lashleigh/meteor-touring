@@ -21,11 +21,15 @@ Meteor.autosubscribe(function () {
   if (trip_id)
     Meteor.subscribe('days', trip_id, function() {
       console.log(Days.find().fetch());
-      if(!Days.find().count()) {
+      if(Days.find().count() >= 1) {
         map.fitBounds(bounds);
+        return;
       } else {
         var d = Days.findOne();
-        map.setCenter(new google.maps.LatLng(d.lat, d.lng));
+        if(d) {
+          map.setCenter(new google.maps.LatLng(d.lat, d.lng));
+          return;
+        } 
       }
     });
 });
