@@ -1,21 +1,52 @@
-var Days = new Meteor.Collection('days');
-var rendererOptions = {
-  draggable: true,
-  suppressInfoWindows: true,
-  preserveViewport: false,
-  markerOptions: {draggable: false}
-};
-var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
-var directionsService = new google.maps.DirectionsService();
-var directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {}) ;
-var map;
-var markers = {};
-var geocoder = new google.maps.Geocoder;
-var bounds = new google.maps.LatLngBounds;
+var Trips = new Meteor.Collection('trips');
+var Days  = new Meteor.Collection('days');
+
+//ID of currently selected trip
+Session.set('trip_id', null);
+Session.set('sort', {order: 1});
+Session.set('current', false);
+
+Meteor.subscribe('trips', function () {
+  if (!Session.get('trip_id')) {
+    var trip = Trips.findOne({}, {sort: {title: 1}});
+    console.log(trip);
+    if (trip) {
+      Session.set('trip_id', trip._id);
+      Router.setTrip(trip._id);
+    }
+  }
+});
+// Always be subscribed to the days for the selected trip.
+Meteor.autosubscribe(function () {
+  var trip_id = Session.get('trip_id');
+  if (trip_id)
+    Meteor.subscribe('days', trip_id);
+});
+
+////////// Tracking selected list in URL //////////
+
+var ToursRouter = Backbone.Router.extend({
+  routes: {
+    ":trip_id": "main",
+    ":trip_id/days/:day_id": "day"
+  },
+  main: function (trip_id) {
+    Session.set("trip_id", trip_id);
+  },
+  day: function(trip_id, day_id) {
+         Session.set("trip_id", trip_id);
+         Session.set("current", day_id);
+       },
+  setTrip: function (trip_id) {
+             console.log(trip_id);
+    this.navigate(trip_id, true);
+  }
+});
+
+Router = new ToursRouter;
 
 Meteor.startup(function() {
-  Session.set('sort', {order: 1});
-  Session.set('current', false);
+  Backbone.history.start({pushState: true});
   $(function() {
     var myOptions = {
       center: new google.maps.LatLng(45.9931636, -123.9226385),
@@ -24,72 +55,98 @@ Meteor.startup(function() {
     };
     map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
     new google.maps.BicyclingLayer().setMap(map);
+
+    google.maps.event.addListener(map, 'click', function(evt) {
+      var d = munge_insert({lat:evt.latLng.lat(), lng: evt.latLng.lng()});
+      make_current(d);
+      calc_route_for_last_day(Days.findOne(d));
+    })
+    directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+    directionsService = new google.maps.DirectionsService();
+    directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {}) ;
+    geocoder = new google.maps.Geocoder;
+    bounds = new google.maps.LatLngBounds;
+    current_icon = icon('59308F', '');
+    hover_icon = icon('8D2D8D', '');
+    yellowMarker = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=|e8e833",
+        new google.maps.Size(40, 37),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(12, 35));
+    pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+        new google.maps.Size(40, 37),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(12, 35));
   });
-  var handle = Days.find().observe({
-    added: function(new_day, prior_count) {
-      if_console('added', new_day, prior_count);
-      if(markers[new_day._id]) return;
-      var marker = new google.maps.Marker({
-        animation: google.maps.Animation.DROP,
-        map: map, 
-        draggable: false, 
-        title: new_day.stop, 
-        icon: Session.get('current') === new_day._id ? current_icon : null,
-        icon: Session.get('hovered') === new_day._id ? current_icon : null
-      })
-      markers[new_day._id] = marker;
-      marker.day_id = new_day._id;
-      if(new_day.polyline) {
-        marker.polyline = new google.maps.Polyline({
-          path: google.maps.geometry.encoding.decodePath(new_day.polyline),
-          map: map
-        })
-      }
-      new google.maps.event.addListener(marker, 'click', function(e) {
-        //Session.set('current', marker.day_id);
-        make_current(marker.day_id);
-      });
-      new google.maps.event.addListener(marker, 'dragend', function(e) {
-        var day = Days.findOne({_id:marker.day_id});
-        update_by_merging(day, {lat: e.latLng.lat(), lng: e.latLng.lng()})
-      });
-      if(new_day.lat && new_day.lng) {
-        marker.setPosition(new google.maps.LatLng(new_day.lat, new_day.lng));
-        bounds.extend(marker.getPosition());
-        map.fitBounds(bounds);
-      } else {
-        geocoder.geocode({address: new_day.stop}, function(res, req) {
-          var best_match = res[0].geometry.location;
-          update_by_merging(new_day, {lat: best_match.lat(), lng: best_match.lng()})
-          marker.setPosition(res[0].geometry.location);
-          
-          bounds.extend(marker.getPosition());
-          map.fitBounds(bounds);
-        })
-      }
-    }, 
+  var handle = theHandle();
+});
+
+function theHandle() {
+  return Days.find().observe({
+    added: added,
     changed: function(day, at_index, old_day) {
       if_console('changed', day, old_day);
       if(day.lat !== old_day.lat || day.lng !== old_day.lng) {
-        markers[day._id].setPosition(new google.maps.LatLng(day.lat, day.lng));
-        calc_route_with_stopover(day);
+        var latlng = new google.maps.LatLng(day.lat, day.lng);
+        markers[day._id].setPosition(latlng);
+        reverse_geocode(day, latlng); 
+        //TODO figure out a better way to limit when calc_route can happen
+        if(old_day.lat && old_day.lng) {
+          calc_route_with_stopover(day);
+        }
       }
       if(day.polyline && (day.polyline !== old_day.polyline)) {
         markers[day._id].polyline.setPath(google.maps.geometry.encoding.decodePath(day.polyline)); 
       }
     },
-    moved: function(day, old_index, new_index) {
-      if_console('moved', day, old_index, new_index);
-    }, 
     removed: function(old_day, at_index) {
       Session.set('hovered', null);
       if(is_current(old_day._id)) {Session.set('current', null)}
       var marker = markers[old_day._id];
-      marker.setMap(null);
-      marker.polyline.setMap(null);
-      google.maps.event.clearInstanceListeners(marker);
-      delete markers[old_day._id];
+      if(marker) {
+        marker.setMap(null);
+        marker.polyline.setMap(null);
+        google.maps.event.clearInstanceListeners(marker);
+        delete markers[old_day._id];
+      }
     }
   });
-});
+}
+
+function added(new_day, prior_count) {
+  if_console('added', new_day, prior_count);
+  if(markers[new_day._id]) return;
+  var marker = new google.maps.Marker({
+    animation: google.maps.Animation.DROP,
+    map: map, 
+    draggable: false, 
+    title: new_day.stop, 
+    icon: Session.get('current') === new_day._id ? current_icon : null,
+    icon: Session.get('hovered') === new_day._id ? current_icon : null
+  })
+  markers[new_day._id] = marker;
+  marker.day_id = new_day._id;
+  marker.polyline = new google.maps.Polyline({
+    map: map
+  })
+  if(new_day.polyline) { marker.polyline.setPath(google.maps.geometry.encoding.decodePath(new_day.polyline)); }
+  new google.maps.event.addListener(marker, 'click', function(e) {
+    make_current(marker.day_id);
+  });
+  new google.maps.event.addListener(marker, 'dragend', function(e) {
+    var day = Days.findOne({_id:marker.day_id});
+    update_by_merging(day, {lat: e.latLng.lat(), lng: e.latLng.lng()})
+  });
+  if(new_day.lat && new_day.lng) {
+    var latlng = new google.maps.LatLng(new_day.lat, new_day.lng)
+    marker.setPosition(latlng);
+    bounds.extend(marker.getPosition());
+    map.fitBounds(bounds);
+    if(!new_day.address) {
+      reverse_geocode(new_day, latlng)
+    }
+  } else {
+    console.log('The day has no coords');
+    geocode(new_day);
+  }
+} 
 

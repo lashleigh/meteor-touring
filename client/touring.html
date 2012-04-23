@@ -27,25 +27,30 @@
       {{> day}}
     {{/each}}
   </div>
-  <div id='new_day'>
-    <input id='new_day_stop' placeholder='Seattle, WA' />
-    <input type='button' id='new_day_button' value='New Day'/>
-  </div>
 </div>
 </template>
 
 <template name="day">
 <div class="day{{current}}" id={{_id}}>
-  <span class="destroy"></span>
+  <span class="wrap destroy_wrap">
+    <span class="destroy"></span>
+  </span>
   <span class="order">{{order}}</span>
-  <span class="stop"> {{stop}} </span>
-  <span class="directions"></span>
-  <span class="move_up"></span>
-  <span class="move_dn"></span>
+  <span class="stop"> {{stop_or_address}} </span>
+  <span class="stop"> {{miles}} </span>
+  <span class="wrap insert_wrap"> 
+    <span class="insert"></span>
+  </span>
+  <span class="wrap directions_wrap">
+    <span class="directions"></span>
+  </span>
 </div>
-{{#if is_current}}
-  {{> day_details}}
-{{/if}}
+</template>
+
+<template name="waypoint">
+  <div class='waypoint'>
+    {{short_loc}}
+  </div>
 </template>
 <template name="day_details">
   <div class='day_details'>

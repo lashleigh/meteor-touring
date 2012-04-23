@@ -25,7 +25,7 @@ div {
   height: 100%;
   overflow-y: scroll;
   .current {
-    background: #ECC6EC;
+    background: #EDE4F6;
   }
   .day {
     display: block;
@@ -35,62 +35,54 @@ div {
     border-bottom: 1px solid #CCC;
     border-top: 1px solid #CCC;
     .stop, .order {
-      margin-left: 30px;
-      height: 100%;
-      width: auto;
       float: left;
+      height: 100%;
       padding-top: 18px;
+      margin-left: 32px;
       line-height: 1;
     }
     .stop {
       margin-left: 8px;
     }
   }
-  .destroy {
+  .insert, .directions, .destroy {
     position: absolute;
-    left: 5px;
-    top: 15px;
-    height: 20px;
-    width: 20px;
-  }
-  .move_up, .move_dn, .directions {
-    position: absolute;
-    top: 15px;
-    right: 25px;
+    margin: 6px;
     height: 12px;
     width: 12px;
   }
-  .move_dn {
-    right: 5px;
+  .wrap {
+    position: absolute;
+    top: 13px;
+    height: 24px;
+    width: 24px;
+    border-radius: 20px;
   }
-  .directions {
-    right: 50px;
+  .directions_wrap {
+    right: 36px;
+  }
+  .insert_wrap {
+    right: 10px;
+  }
+  .destroy_wrap {
+    left: 2px;
   }
   .day:hover {
     border-color: #B395DC;
     .destroy {
-      background: url('/destroy.png') no-repeat 0 0;
-    }
-    .destroy:hover {
-      background-position:0 -20px;
-    }
-    .move_up {
-      background: url('/gh-icons.png') no-repeat 0 0;
-    }
-    .move_up:hover {
-      background-position: -12px 0;
-    }
-    .move_dn {
-      background: url('/gh-icons.png') no-repeat 0 -12px;
-    }
-    .move_dn:hover {
-      background-position: -12px -12px;
+      background: url('/gh-icons-0004.png') no-repeat 0 -60px;
     }
     .directions {
-      background: url('/gh-icons.png') no-repeat 0 -36px;
+      background: url('/gh-icons-0004.png') no-repeat 0 -36px;
     }
-    .directions:hover {
-      background-position: -12px -36px;
+    .insert {
+      background: url('/gh-icons-0004.png') no-repeat 0 -288px;
+    }
+    .wrap {
+      background-color: #ccc;
+    }
+    .wrap:hover {
+      background-color: #aaa;
     }
   }
 }

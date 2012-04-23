@@ -1,57 +1,38 @@
 Template.header.greeting = function () {
-  return "Welcome to touring.";
+  var trip = Trips.findOne(Session.get('trip_id'));
+  if(trip) {
+    return trip.title;
+  } else {
+    return 'Loading...';
+  }
 };
 
 Template.days.days = function() {
   return Days.find({}, {sort: Session.get('sort')});
 };
 Template.days.events = {
-  'click input#new_day_button': function() {
-    var stop = $('#new_day_stop').val().replace(/(^\s+|\s+$)/g,'');
-    if(stop.length > 5) {
-      Days.insert({stop: stop, order: Days.find().count()+1, created_at: Date.now()});
-      $('#new_day_stop').val('');
-    }
-  },
   'mouseout': function() {
     if(Session.get('hovered') && (Session.get('hovered') !== Session.get('current'))) markers[Session.get('hovered')].setIcon(null);
-  },
-  'click #sort_lat': function() {
-    var old = Session.get('sort').lat
-    if(old) {
-      Session.set('sort', {lat: -1*old});
-    } else {
-      Session.set('sort', {lat: -1});
-    }
-  },
-  'click #sort_lng': function() {
-    var old = Session.get('sort').lng
-    if(old) {
-      Session.set('sort', {lng: -1*old});
-    } else {
-      Session.set('sort', {lng: -1});
-    }
-  },
-  'click #sort_order': function() {
-    Session.set('sort', {order: 1});
   },
   'click #reset_days': function() {
     Days.remove({});
     Meteor.call('reset');
   }
 }
-Template.day.sort_by_order = function() {
-  return !!Session.get('sort').order;
-}
 Template.day.current = function() {
   return Session.get('current') === this._id ? ' current' : '';
+}
+Template.day.stop_or_address = function() {
+  return !!this.stop ? this.stop : this.address;
 }
 Template.day.is_current = function() {
   return !!(Session.get('current') === this._id);
 }
+Template.day.miles = function() {
+  return this.distance ? Math.floor(this.distance * 0.00621371192)/10.0 : '';
+}
 Template.day.events = {
   'click' : function (e) {
-    // template data, if any, is available in 'this'
     make_current(this._id)
   },
   'mouseover': function() {
@@ -69,21 +50,23 @@ Template.day.events = {
   'dblclick .stop': function() {
     $('#'+this._id+' .stop').attr('contentEditable', true).focus();
   },
-  'click .destroy': function(e) {
+  'click .destroy_wrap': function(e) {
     e.stopPropagation();
     Days.remove({_id: this._id});
     adjust_order_after_remove(this);
   },
-  'click .move_up': function(e) {
-    //e.stopPropagation();
-    move_one(this, -1);
-  },
-  'click .move_dn': function(e) {
-    //e.stopPropagation();
-    move_one(this, 1);
-  },
-  'click .directions': function(e) {
+  'click .directions_wrap': function(e) {
     calc_route(this);
+  },
+  'click .insert_wrap': function(e) {
+    e.stopPropagation();
+    var day = this;
+    var path = google.maps.geometry.encoding.decodePath(day.polyline);
+    var midpoint = path[Math.floor(path.length/2)];
+    Days.update({order: {$gte: day.order+1}}, {$inc: {order: 1}}, {multi: true});
+    var d = munge_insert({lat: midpoint.lat(), lng:midpoint.lng(), order: day.order+1});
+    make_current(d);
+    calc_route_with_stopover(Days.findOne(d));
   },
   'blur .stop': function() {
     $('#'+this._id+' .stop').attr('contentEditable', null)
@@ -92,7 +75,9 @@ Template.day.events = {
     if(e.keyCode === 13) {
       e.preventDefault();
       var new_stop = $('#'+this._id+' .stop').text().replace(/(^\s+|\s+$)/g,'');
-      if(new_stop.length > 3) {
+      if(new_stop.length === 0) {
+        update_by_merging(this, {stop: ''})
+      } else if(new_stop.length > 3) {
         update_by_merging(this, {stop: new_stop})
       } else {
         if_console('too short');
