@@ -21,7 +21,7 @@ Meteor.autosubscribe(function () {
   if (trip_id)
     Meteor.subscribe('days', trip_id, function() {
       console.log(Days.find().fetch());
-      if(Days.find().count() >= 1) {
+      if(Days.find().count() >= 2) {
         map.fitBounds(bounds);
         return;
       } else {
