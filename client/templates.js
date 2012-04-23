@@ -10,6 +10,9 @@ Template.header.greeting = function () {
 Template.days.days = function() {
   return Days.find({}, {sort: Session.get('sort')});
 };
+Template.days.any_days = function() {
+  return !!Days.find().count();
+}
 Template.days.events = {
   'mouseout': function() {
     if(Session.get('hovered') && (Session.get('hovered') !== Session.get('current'))) markers[Session.get('hovered')].setIcon(null);
@@ -56,6 +59,7 @@ Template.day.events = {
     e.stopPropagation();
     Days.remove({_id: this._id});
     adjust_order_after_remove(this);
+    directionsDisplay.setMap(null);
   },
   'click .directions_wrap': function(e) {
     calc_route(this);

@@ -23,9 +23,15 @@
 <template name="days">
 <div>
   <div class="days">
-    {{#each days}}
-      {{> day}}
-    {{/each}}
+    {{#if any_days}}
+      {{#each days}}
+        {{> day}}
+      {{/each}}
+    {{else}}
+      <div id='no_days' class='day'>
+        Click on the map to start your trip
+      </div>
+    {{/if}}
   </div>
 </div>
 </template>

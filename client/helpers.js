@@ -173,6 +173,7 @@ function standardDirectionsDisplay(response, status) {
     directionsDisplay.setDirections(response);
     directionsDisplay.setPanel($('.day_details')[0]);
   } else {
+    //Days.remove(Session.get('current'));
     alert(status);
   }
 }

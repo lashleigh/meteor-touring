@@ -19,7 +19,15 @@ Meteor.subscribe('trips', function () {
 Meteor.autosubscribe(function () {
   var trip_id = Session.get('trip_id');
   if (trip_id)
-    Meteor.subscribe('days', trip_id);
+    Meteor.subscribe('days', trip_id, function() {
+      console.log(Days.find().fetch());
+      if(!Days.find().count()) {
+        map.fitBounds(bounds);
+      } else {
+        var d = Days.findOne();
+        map.setCenter(new google.maps.LatLng(d.lat, d.lng));
+      }
+    });
 });
 
 ////////// Tracking selected list in URL //////////
@@ -143,6 +151,7 @@ function added(new_day, prior_count) {
     if(!new_day.address) {
       reverse_geocode(new_day, latlng);
     }
+    bounds.extend(latlng);
   } else {
     geocode(new_day);
   }
