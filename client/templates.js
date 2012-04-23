@@ -38,9 +38,11 @@ Template.day.events = {
   'mouseover': function() {
     Session.set('hovered', this._id);
     markers[this._id].setIcon(hover_icon);
+    markers[this._id].polyline.setOptions({strokeOpacity: 0.9})
   },
   'mouseout': function() {
     Session.set('hovered', null);
+    markers[this._id].polyline.setOptions({strokeOpacity: 0.5})
     if(Session.get('current') == this._id) {
       markers[this._id].setIcon(current_icon);
     } else {
@@ -61,9 +63,10 @@ Template.day.events = {
   'click .insert_wrap': function(e) {
     e.stopPropagation();
     var day = this;
-    var path = google.maps.geometry.encoding.decodePath(day.polyline);
+    var path = decodePath(day.polyline);
     var midpoint = path[Math.floor(path.length/2)];
-    Days.update({order: {$gte: day.order+1}}, {$inc: {order: 1}}, {multi: true});
+    munge_update({order: {$gte: day.order+1}}, {$inc: {order: 1}}, {multi: true});
+    munge_update(day._id, {$set: {waypoints: []}}); //TODO Unfortunate but how else would I keep the waypoint order straight?
     var d = munge_insert({lat: midpoint.lat(), lng:midpoint.lng(), order: day.order+1});
     make_current(d);
     calc_route_with_stopover(Days.findOne(d));

@@ -17,6 +17,7 @@ function munge_insert(attributes) {
   attributes.trip_id = Session.get('trip_id');
   //TODO best way to maintain order => Days.find().count()+1 || _.max(_.pluck(Days.find().fetch(), 'order'))+1
   attributes.order = attributes.order || Days.find().count()+1;
+  attributes.waypoints = attributes.waypoints || [];
   return Days.insert(attributes);
 }
 function munge_update(select, updates, multi) {
@@ -25,17 +26,17 @@ function munge_update(select, updates, multi) {
   Days.update(select, updates, multi);
 }
 function adjust_order_after_remove(old_day) {
+  var prev_day = Days.findOne({order: old_day.order -1});
+  var next_day = Days.findOne({order: old_day.order +1});
   munge_update({order: {$gte: old_day.order}}, {$inc : {order: -1}}, {multi: true});
-  if(Days.find({order: {$gt: old_day.order}}).count() === 0) {
-    var d = Days.findOne({order: old_day.order-1});
-    console.log(d)
-    if(d) {
-      Days.update(d._id, {$set : {polyline: null, waypoints: null, distance: null}});
-      markers[d._id].polyline.setMap(null);
-    } else {
-      //TODO what to do when there are no days remaining?
-    }
-  }
+  if(!next_day) {
+    munge_update(prev_day._id, {$set : {polyline: null, waypoints: [], distance: null}});
+  } else if(next_day && prev_day) {
+    var new_path = decodePath(prev_day.polyline).concat(decodePath(old_day.polyline));
+    var new_poly = google.maps.geometry.encoding.encodePath(new_path);
+    markers[prev_day._id].polyline.setPath(new_path);
+    munge_update(prev_day._id, {$set: {waypoints: prev_day.waypoints.concat(old_day.waypoints), polyline: new_poly, distance: prev_day.distance + old_day.distance}});
+  } 
 }
 function coords_to_google_point(coords) {
   return new google.maps.LatLng(coords.lat, coords.lng);
@@ -47,7 +48,7 @@ function coords_to_google_waypoints(day) {
 }
 function calc_route_for_first_day(day) {
   var next_day = Days.findOne({order: day.order+1});
-  if(!next_day) { console.log('there must be only one day...'); return;}
+  if(!next_day) { if_console('there must be only one day...'); return;}
   markers[day._id].polyline.setMap(map);
   var request = {
     origin: latlng_from_day(day),
@@ -64,7 +65,6 @@ function calc_route_for_first_day(day) {
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
     if((Session.get('directions').routes[0].legs[0].end_address !== route.legs[0].end_address)) {
-      console.log('illegal drag of end location');
       directionsDisplay.setDirections(Session.get('directions'));
     } else {
       var waypoints = route.legs[0].via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
@@ -96,7 +96,6 @@ function calc_route_with_stopover(day) {
     var route = directionsDisplay.directions.routes[0];
     if((Session.get('directions').routes[0].legs[0].start_address !== route.legs[0].start_address) ||
        (Session.get('directions').routes[0].legs[1].end_address   !== route.legs[1].end_address )) {
-      console.log('innapropriate drag');
       directionsDisplay.setDirections(Session.get('directions'))
     } else {
       var legs_0 = route.legs[0]; var legs_1 = route.legs[1];
@@ -116,7 +115,7 @@ function calc_route_with_stopover(day) {
 }
 function calc_route_for_last_day(day) {
   var prev_day = Days.findOne({order: day.order-1});
-  if(!prev_day) { console.log('there must be only one day...'); return;}
+  if(!prev_day) { if_console('there must be only one day...'); return;}
   markers[prev_day._id].polyline.setMap(map);
   var request = {
     origin: latlng_from_day(prev_day),  
@@ -133,7 +132,6 @@ function calc_route_for_last_day(day) {
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
     if((Session.get('directions').routes[0].legs[0].start_address !== route.legs[0].start_address)) {
-      console.log('illegal drag of start location');
       directionsDisplay.setDirections(Session.get('directions'));
     } else {
       var waypoints = route.legs[0].via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
@@ -188,7 +186,6 @@ function is_current(id) {
   return Session.get('current') && (Session.get('current') === id)
 }
 function make_current(id) {
-  console.log('current', id);
   if(Session.get('current') && markers[Session.get('current')]) {
     markers[Session.get('current')].setIcon(null);
     markers[Session.get('current')].setDraggable(false);
@@ -199,9 +196,6 @@ function make_current(id) {
   map.panTo( markers[id].getPosition());
   directionsDisplay.setMap(null);
   directionsDisplay.setPanel(null);
-}
-function print_days() {
-  Days.find().forEach(function(d) {if_console(d);});
 }
 function if_console(message) {
   if (typeof console !== 'undefined')
@@ -215,13 +209,11 @@ function latlng_from_day(day) {
 }
 function geocode(day) {
   geocoder.geocode({address: day.stop}, function(res, req) {
-    console.log(res, req);
     munge_update(day._id, {$set: {lat: res[0].geometry.location.lat(), lng:res[0].geometry.location.lng()}});
   })
 }
 function reverse_geocode(day, latlng) {
   geocoder.geocode({location: latlng}, function(res, req) {
-    console.log(res, req);
     var result = res[0].address_components;
     var info=[];
     for(var i=0;i<result.length;++i) {
@@ -233,4 +225,7 @@ function reverse_geocode(day, latlng) {
 }
 function markers_on_waypoints() {
   var waypoint = directionsDisplay.directions.routes[0].legs[0].via_waypoints;
+}
+function decodePath(path) {
+  return google.maps.geometry.encoding.decodePath(path);
 }

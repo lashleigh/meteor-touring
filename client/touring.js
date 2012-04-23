@@ -9,7 +9,6 @@ Session.set('current', false);
 Meteor.subscribe('trips', function () {
   if (!Session.get('trip_id')) {
     var trip = Trips.findOne({}, {sort: {title: 1}});
-    console.log(trip);
     if (trip) {
       Session.set('trip_id', trip._id);
       Router.setTrip(trip._id);
@@ -38,7 +37,6 @@ var ToursRouter = Backbone.Router.extend({
          Session.set("current", day_id);
        },
   setTrip: function (trip_id) {
-             console.log(trip_id);
     this.navigate(trip_id, true);
   }
 });
@@ -84,18 +82,17 @@ function theHandle() {
   return Days.find().observe({
     added: added,
     changed: function(day, at_index, old_day) {
-      if_console('changed', day, old_day);
       if(day.lat !== old_day.lat || day.lng !== old_day.lng) {
         var latlng = new google.maps.LatLng(day.lat, day.lng);
         markers[day._id].setPosition(latlng);
         reverse_geocode(day, latlng); 
         //TODO figure out a better way to limit when calc_route can happen
-        if(old_day.lat && old_day.lng) {
-          calc_route_with_stopover(day);
-        }
       }
       if(day.polyline && (day.polyline !== old_day.polyline)) {
         markers[day._id].polyline.setPath(google.maps.geometry.encoding.decodePath(day.polyline)); 
+        markers[day._id].polyline.setMap(map);
+      } else if(!day.polyline) {
+        markers[day._id].polyline.setMap(null);
       }
     },
     removed: function(old_day, at_index) {
@@ -113,7 +110,6 @@ function theHandle() {
 }
 
 function added(new_day, prior_count) {
-  if_console('added', new_day, prior_count);
   if(markers[new_day._id]) return;
   var marker = new google.maps.Marker({
     animation: google.maps.Animation.DROP,
@@ -122,11 +118,13 @@ function added(new_day, prior_count) {
     title: new_day.stop, 
     icon: Session.get('current') === new_day._id ? current_icon : null,
     icon: Session.get('hovered') === new_day._id ? current_icon : null
-  })
+  });
   markers[new_day._id] = marker;
   marker.day_id = new_day._id;
   marker.polyline = new google.maps.Polyline({
-    map: map
+    map: map,
+    strokeOpacity: 0.5,
+    strokeWeight: 3
   })
   if(new_day.polyline) { marker.polyline.setPath(google.maps.geometry.encoding.decodePath(new_day.polyline)); }
   new google.maps.event.addListener(marker, 'click', function(e) {
@@ -135,6 +133,7 @@ function added(new_day, prior_count) {
   new google.maps.event.addListener(marker, 'dragend', function(e) {
     var day = Days.findOne({_id:marker.day_id});
     update_by_merging(day, {lat: e.latLng.lat(), lng: e.latLng.lng()})
+    calc_route_with_stopover(day);
   });
   if(new_day.lat && new_day.lng) {
     var latlng = new google.maps.LatLng(new_day.lat, new_day.lng)
@@ -145,7 +144,6 @@ function added(new_day, prior_count) {
       reverse_geocode(new_day, latlng)
     }
   } else {
-    console.log('The day has no coords');
     geocode(new_day);
   }
 } 
