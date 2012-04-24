@@ -46,6 +46,7 @@ Meteor.autosubscribe(function () {
 
 var ToursRouter = Backbone.Router.extend({
   routes: {
+    "": "trips",
     "trips": "trips",
     "trips/new": "newTrip",
     "trips/:trip_id": "main",
