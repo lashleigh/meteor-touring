@@ -8,6 +8,7 @@ Template.content.events = {
   'click button.danger': function() {
     if(confirm('are you sure?')) {
       Trips.remove(Session.get('trip_id'));
+      Days.remove({trip_id: Session.get('trip_id')});
       Router.trips();
     } 
   }

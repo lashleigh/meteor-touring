@@ -14,6 +14,8 @@ function munge_insert(attributes) {
   return Days.insert(attributes);
 }
 function munge_update(select, updates, multi) {
+  if(_.isString(select)) select = {_id: select};
+  select.trip_id = Session.get('trip_id');
   updates.$set = updates.$set || {};
   updates.$set.updated_at = Date.now();
   Days.update(select, updates, multi);
