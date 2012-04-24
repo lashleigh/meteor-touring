@@ -204,21 +204,30 @@ function latlng_from_day(day) {
   return new google.maps.LatLng(day.lat, day.lng);
 }
 function geocode(day) {
-  geocoder.geocode({address: day.stop}, function(res, req) {
-    munge_update(day._id, {$set: {lat: res[0].geometry.location.lat(), lng:res[0].geometry.location.lng()}});
-    static_map();
+  geocoder.geocode({address: day.stop}, function(res, status) {
+    if(status === google.maps.GeocoderStatus.OK) {
+      munge_update(day._id, {$set: {lat: res[0].geometry.location.lat(), lng:res[0].geometry.location.lng()}});
+      static_map();
+    } else {
+      alert(status);
+    }
   })
 }
 function reverse_geocode(day, latlng) {
-  geocoder.geocode({location: latlng}, function(res, req) {
-    var result = res[0].address_components;
-    var info=[];
-    for(var i=0;i<result.length;++i) {
-        if(result[i].types[0]=="administrative_area_level_1"){info.push(result[i].short_name)}
-        if(result[i].types[0]=="locality"){info.unshift(result[i].long_name)}
+  console.log(day, latlng);
+  geocoder.geocode({location: latlng}, function(res, status) {
+    if(status === google.maps.GeocoderStatus.OK) {
+      var result = res[0].address_components;
+      var info=[];
+      for(var i=0;i<result.length;++i) {
+          if(result[i].types[0]=="administrative_area_level_1"){info.push(result[i].short_name)}
+          if(result[i].types[0]=="locality"){info.unshift(result[i].long_name)}
+      }
+      munge_update(day._id, {$set: {address: info.join(', ')}})
+      static_map();
+    } else {
+      alert(status);
     }
-    munge_update(day._id, {$set: {address: info.join(', ')}})
-    static_map();
   })
 }
 function markers_on_waypoints() {
