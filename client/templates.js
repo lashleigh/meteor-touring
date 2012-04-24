@@ -1,4 +1,22 @@
-Template.header.greeting = function () {
+Template.content.has_trip = function() {
+  return !!Session.get('trip_id');
+};
+Template.content.events = {
+  'click button.home': function() {
+  console.log('going home');
+    Router.trips();
+  }
+}
+Template.trips.trips = function() {
+  return Trips.find().fetch();
+};
+Template.trip.events = {
+  'click': function() {
+    console.log('clicked on ', this)
+    Session.set('trip_id', this._id);
+  }
+}
+Template.show_trip.greeting = function () {
   var trip = Trips.findOne(Session.get('trip_id'));
   if(trip) {
     return trip.title;
@@ -6,6 +24,27 @@ Template.header.greeting = function () {
     return 'Loading...';
   }
 };
+Template.show_trip.events = {
+  'dblclick h1': function() {
+    $('.title h1').attr('contentEditable', true).focus();
+  },
+  'blur h1': function() {
+    $('.title h1').attr('contentEditable', null);
+  },
+  'keydown h1': function(e) {
+    if(e.keyCode === 13) {
+      e.preventDefault();
+      var trip = Trips.findOne(Session.get('trip_id'));
+      var new_title = $('.title h1').text().replace(/(^\s+|\s+$)/g,'');
+      if(new_title.length > 3) {
+        Trips.update(trip._id, {$set : {title: new_title}});
+      } else {
+        if_console('too short');
+        $('.title h1').text(trip.title).blur();
+      }
+    }
+  }
+}
 
 Template.days.days = function() {
   return Days.find({}, {sort: Session.get('sort')});
@@ -16,10 +55,6 @@ Template.days.any_days = function() {
 Template.days.events = {
   'mouseout': function() {
     if(Session.get('hovered') && (Session.get('hovered') !== Session.get('current'))) markers[Session.get('hovered')].setIcon(null);
-  },
-  'click #reset_days': function() {
-    Days.remove({});
-    Meteor.call('reset');
   }
 }
 Template.day.current = function() {
@@ -32,10 +67,14 @@ Template.day.is_current = function() {
   return !!(Session.get('current') === this._id);
 }
 Template.day.miles = function() {
-  return this.distance ? Math.floor(this.distance * 0.00621371192)/10.0 : '';
+  return this.distance ? toMiles(this.distance) : '';
+}
+Template.day.total_distance = function() {
+  return toMiles(_.reduce(_.pluck(Days.find().fetch(), 'distance'), function(a, b) {return a + b;}, 0));
 }
 Template.day.events = {
   'click' : function (e) {
+    console.log('wtf');
     make_current(this._id)
   },
   'mouseover': function() {
@@ -45,11 +84,14 @@ Template.day.events = {
   },
   'mouseout': function() {
     Session.set('hovered', null);
-    markers[this._id].polyline.setOptions({strokeOpacity: 0.5})
-    if(Session.get('current') == this._id) {
-      markers[this._id].setIcon(current_icon);
-    } else {
-      markers[this._id].setIcon(null);
+    var marker = markers[this._id];
+    if(marker) {
+      marker.polyline.setOptions({strokeOpacity: 0.5})
+      if(Session.get('current') == this._id) {
+        marker.setIcon(current_icon);
+      } else {
+        marker.setIcon(null);
+      }
     }
   },
   'dblclick .stop': function() {
@@ -59,10 +101,9 @@ Template.day.events = {
     e.stopPropagation();
     Days.remove({_id: this._id});
     adjust_order_after_remove(this);
-    directionsDisplay.setMap(null);
   },
   'click .directions_wrap': function(e) {
-    calc_route(this);
+    calc_route_with_stopover(this);
   },
   'click .insert_wrap': function(e) {
     e.stopPropagation();

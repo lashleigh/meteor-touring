@@ -4,13 +4,6 @@ var rendererOptions = {
   preserveViewport: false,
   markerOptions: {draggable: false}
 };
-var map;
-var markers = {};
-var directionsDisplay;
-var directionsService;
-var directions_change_listener;
-var geocoder;
-var bounds;
 function munge_insert(attributes) {
   attributes.created_at = Date.now();
   attributes.updated_at = Date.now();
@@ -191,7 +184,7 @@ function make_current(id) {
     markers[Session.get('current')].setIcon(null);
     markers[Session.get('current')].setDraggable(false);
   }
-  Session.set('current', id)
+  Session.set('current', id);
   markers[id].setIcon(current_icon);
   markers[id].setDraggable(true);
   map.panTo( markers[id].getPosition());
@@ -228,5 +221,47 @@ function markers_on_waypoints() {
   var waypoint = directionsDisplay.directions.routes[0].legs[0].via_waypoints;
 }
 function decodePath(path) {
+  path = path || '';
   return google.maps.geometry.encoding.decodePath(path);
+}
+function encodePath(path) {
+  return google.maps.geometry.encoding.encodePath(path);
+}
+function distanceBetween(p1, p2) {
+  var R = 6371; // km
+  var dLat = toRadians(p2.lat-p1.lat);
+  var dLon = toRadians(p2.lng-p1.lng);
+  var lat1 = toRadians(p1.lat);
+  var lat2 = toRadians(p2.lat);
+
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c;
+  return d;
+}
+function distanceBetweenShort(p1, p2) {
+  var R = 6371; // km
+  var x = toRadians(p2.lng-p1.lng) * Math.cos(toRadians(p1.lat+p2.lat)/2);
+  var y = toRadians(p2.lat-p1.lat);
+  var d = Math.sqrt(x*x + y*y) * R;
+  return d;
+}
+function toRadians(num) {
+  return num * Math.PI / 180;
+}
+function toMiles(num) {
+  return (num*0.000621371192).toFixed(1)+' mi';
+}
+function toKilometer(num) {
+  return num / 1000.0;
+}
+function static_map() {
+  var basic = 'http://maps.googleapis.com/maps/api/staticmap?size=300x250&path=weight:5|color:0x00000099|enc:';
+  var mod = Math.ceil( Days.find().count() / 200.0) || 1;
+  var path = encodePath(_.map(_.filter(Days.find({}, {sort: {order: 1}}).fetch(), function(d) {return d.order % mod === 0;}), function(d) {return latlng_from_day(d)}));
+    //path = encodePath(_.map(Days.find({}, {sort: {order: 1}}).fetch(), function(d) {return latlng_from_day(d)}));
+  var full_path =  basic+path+"&sensor=false";
+  console.log('static map', Session.get('trip_id'));
+  Trips.update(Session.get('trip_id'), {$set: {path: full_path}});
 }

@@ -1,27 +1,34 @@
 var Trips = new Meteor.Collection('trips');
 var Days  = new Meteor.Collection('days');
 
+var map;
 //ID of currently selected trip
 Session.set('trip_id', null);
 Session.set('sort', {order: 1});
 Session.set('current', false);
 
 Meteor.subscribe('trips', function () {
-  if (!Session.get('trip_id')) {
+  /*if (!Session.get('trip_id')) {
     var trip = Trips.findOne({}, {sort: {title: 1}});
     if (trip) {
       Session.set('trip_id', trip._id);
       Router.setTrip(trip._id);
     }
-  }
+  }*/
 });
 // Always be subscribed to the days for the selected trip.
 Meteor.autosubscribe(function () {
   var trip_id = Session.get('trip_id');
-  if (trip_id)
+  if (trip_id) {
+    Router.setTrip(Session.get('trip_id'));
     Meteor.subscribe('days', trip_id, function() {
-      console.log(Days.find().fetch());
-      if(Days.find().count() >= 2) {
+      initialize_map();
+      handle = theHandle();
+      console.log(Days.find().count(), Days.find().fetch());
+      if(Days.find().count() >= 2 && map) {
+        var bounds = new google.maps.LatLngBounds;
+        _.each(Days.find().fetch(), function(d) {bounds.extend(latlng_from_day(d));})
+        console.log(bounds);
         map.fitBounds(bounds);
         return;
       } else {
@@ -32,14 +39,18 @@ Meteor.autosubscribe(function () {
         } 
       }
     });
+  } else {
+    $('html, body').css({height: null, width: null, overflow: null}) 
+  }
 });
 
 ////////// Tracking selected list in URL //////////
 
 var ToursRouter = Backbone.Router.extend({
   routes: {
-    ":trip_id": "main",
-    ":trip_id/days/:day_id": "day"
+    "trips": "trips",
+    "trips/:trip_id": "main",
+    "trips/:trip_id/days/:day_id": "day"
   },
   main: function (trip_id) {
     Session.set("trip_id", trip_id);
@@ -48,8 +59,15 @@ var ToursRouter = Backbone.Router.extend({
          Session.set("trip_id", trip_id);
          Session.set("current", day_id);
        },
+  trips: function() {
+            Session.set('trip_id', null);
+            Session.set('current', null);
+            Session.set('hovered', null);
+            handle.stop();
+            this.navigate('trips', {trigger: false});
+          },
   setTrip: function (trip_id) {
-    this.navigate(trip_id, true);
+    this.navigate('trips/'+trip_id, true);
   }
 });
 
@@ -57,39 +75,36 @@ Router = new ToursRouter;
 
 Meteor.startup(function() {
   Backbone.history.start({pushState: true});
-  $(function() {
-    var myOptions = {
-      center: new google.maps.LatLng(45.9931636, -123.9226385),
-      zoom: 8,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-    new google.maps.BicyclingLayer().setMap(map);
-
-    google.maps.event.addListener(map, 'click', function(evt) {
-      var d = munge_insert({lat:evt.latLng.lat(), lng: evt.latLng.lng()});
-      make_current(d);
-      calc_route_for_last_day(Days.findOne(d));
-    })
-    directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
-    directionsService = new google.maps.DirectionsService();
-    directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {}) ;
-    geocoder = new google.maps.Geocoder;
-    bounds = new google.maps.LatLngBounds;
-    current_icon = icon('59308F', '');
-    hover_icon = icon('8D2D8D', '');
-    yellowMarker = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=|e8e833",
-        new google.maps.Size(40, 37),
-        new google.maps.Point(0, 0),
-        new google.maps.Point(12, 35));
-    pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
-        new google.maps.Size(40, 37),
-        new google.maps.Point(0, 0),
-        new google.maps.Point(12, 35));
-  });
-  var handle = theHandle();
 });
+function initialize_map() {
+  $('html, body').css({height: '100%', width: '100%', overflow: 'hidden'});
+  var myOptions = {
+    center: new google.maps.LatLng(45.9931636, -123.9226385),
+    zoom: 8,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+  map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+  new google.maps.BicyclingLayer().setMap(map);
 
+  /*google.maps.event.addListener(map, 'mousemove', function(evt) {
+    var last = Days.findOne({}, {sort: {order : -1}});
+    if(last) {
+      console.log(distanceBetweenShort({lat:evt.latLng.lat(), lng: evt.latLng.lng()}, last));
+    }
+  });*/
+  google.maps.event.addListener(map, 'click', function(evt) {
+    var d = munge_insert({lat:evt.latLng.lat(), lng: evt.latLng.lng()});
+    make_current(d);
+    calc_route_for_last_day(Days.findOne(d));
+  });
+  markers = {};
+  directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+  directionsService = new google.maps.DirectionsService();
+  directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {}) ;
+  geocoder = new google.maps.Geocoder;
+  current_icon = icon('59308F', '');
+  hover_icon = icon('8D2D8D', '');
+}
 function theHandle() {
   return Days.find().observe({
     added: added,
@@ -111,6 +126,7 @@ function theHandle() {
       Session.set('hovered', null);
       if(is_current(old_day._id)) {Session.set('current', null)}
       var marker = markers[old_day._id];
+      directionsDisplay.setMap(null);
       if(marker) {
         marker.setMap(null);
         marker.polyline.setMap(null);
@@ -155,7 +171,6 @@ function added(new_day, prior_count) {
     if(!new_day.address) {
       reverse_geocode(new_day, latlng);
     }
-    bounds.extend(latlng);
   } else {
     geocode(new_day);
   }

@@ -7,16 +7,42 @@
 </head>
 
 <body>
+  {{> content}}
+</body>
+
+<template name="content">
+  {{#if has_trip}}
+  <div> <button class='home'>See all the trips</button> </div>
   <div id='content'>
-    {{> header}}
+    {{> show_trip}}
     {{> days}}
   </div>
   <div id="map_canvas" ></div>
-</body>
+  {{else}}
+    {{> trips}}
+  {{/if}}
+</template>
 
-<template name="header">
-  <div id="header">
-    <h1>{{greeting}}</h1>
+<template name="trips">
+  <div id='all_trips'>
+    {{#each trips}}
+      {{> trip}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="trip">
+  <div class='trip'>
+    <h1>{{title}}</h1>
+    <img src={{path}} >
+  </div>
+</template>
+
+<template name="show_trip">
+  <div id="trip_{{_id}}">
+    <span class='title'>
+      <h1>{{greeting}}</h1>
+    </span>
   </div>
 </template>
 
@@ -41,9 +67,8 @@
   <span class="wrap destroy_wrap">
     <span class="destroy"></span>
   </span>
-  <span class="order">{{order}}</span>
+  <span class="distance"> {{miles}}</span>
   <span class="stop"> {{stop_or_address}} </span>
-  <span class="stop"> {{miles}} </span>
   <span class="wrap insert_wrap"> 
     <span class="insert"></span>
   </span>
