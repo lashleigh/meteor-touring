@@ -86,7 +86,7 @@ function calc_route_with_stopover(day) {
   }
   directionsService.route(request, standardDirectionsDisplay);
   google.maps.event.removeListener(directions_change_listener);
-  directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: true})
+  directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: false})
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
     if((Session.get('directions').routes[0].legs[0].start_address !== route.legs[0].start_address) ||
@@ -122,7 +122,7 @@ function calc_route_for_last_day(day) {
   }
   directionsService.route(request, standardDirectionsDisplay);
   google.maps.event.removeListener(directions_change_listener);
-  directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: true});
+  directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: false});
 
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
