@@ -143,7 +143,6 @@ function theHandle() {
 function added(new_day, prior_count) {
   if(markers[new_day._id]) return;
   var marker = new google.maps.Marker({
-    animation: google.maps.Animation.DROP,
     map: map, 
     draggable: false, 
     title: new_day.stop, 
