@@ -24,11 +24,9 @@ Meteor.autosubscribe(function () {
     Meteor.subscribe('days', trip_id, function() {
       initialize_map();
       handle = theHandle();
-      console.log(Days.find().count(), Days.find().fetch());
       if(Days.find().count() >= 2 && map) {
         var bounds = new google.maps.LatLngBounds;
         _.each(Days.find().fetch(), function(d) {bounds.extend(latlng_from_day(d));})
-        console.log(bounds);
         map.fitBounds(bounds);
         return;
       } else {
@@ -63,7 +61,6 @@ var ToursRouter = Backbone.Router.extend({
             Session.set('trip_id', null);
             Session.set('current', null);
             Session.set('hovered', null);
-            handle.stop();
             this.navigate('trips', {trigger: false});
           },
   setTrip: function (trip_id) {

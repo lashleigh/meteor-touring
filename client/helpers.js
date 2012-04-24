@@ -204,6 +204,7 @@ function latlng_from_day(day) {
 function geocode(day) {
   geocoder.geocode({address: day.stop}, function(res, req) {
     munge_update(day._id, {$set: {lat: res[0].geometry.location.lat(), lng:res[0].geometry.location.lng()}});
+    static_map();
   })
 }
 function reverse_geocode(day, latlng) {
@@ -215,6 +216,7 @@ function reverse_geocode(day, latlng) {
         if(result[i].types[0]=="locality"){info.unshift(result[i].long_name)}
     }
     munge_update(day._id, {$set: {address: info.join(', ')}})
+    static_map();
   })
 }
 function markers_on_waypoints() {
@@ -258,10 +260,12 @@ function toKilometer(num) {
 }
 function static_map() {
   var basic = 'http://maps.googleapis.com/maps/api/staticmap?size=300x250&path=weight:5|color:0x00000099|enc:';
-  var mod = Math.ceil( Days.find().count() / 200.0) || 1;
-  var path = encodePath(_.map(_.filter(Days.find({}, {sort: {order: 1}}).fetch(), function(d) {return d.order % mod === 0;}), function(d) {return latlng_from_day(d)}));
-    //path = encodePath(_.map(Days.find({}, {sort: {order: 1}}).fetch(), function(d) {return latlng_from_day(d)}));
+  var days = Days.find({}, {sort: {order: 1}}).fetch();
+  var mod = Math.ceil( days.length / 200.0) || 1;
+  var path = encodePath(_.map(_.filter(days, function(d) {return d.order % mod === 0;}), function(d) {return latlng_from_day(d)}));
   var full_path =  basic+path+"&sensor=false";
-  console.log('static map', Session.get('trip_id'));
-  Trips.update(Session.get('trip_id'), {$set: {path: full_path}});
+  var distance = _.reduce(_.pluck(_.filter(days, function(d) {return !!d.distance}), 'distance'), function(a, b) {return a+ b; }, 0);
+  Trips.update(Session.get('trip_id'), {$set: {path: full_path, num_days: days.length, distance: distance}});
 }
+//#TODO make sure that indexes never get out of whack
+//_.each(d, function(day, idx) {munge_update(day._id, {$set: {order: idx+1}}); })

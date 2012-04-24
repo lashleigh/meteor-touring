@@ -10,6 +10,9 @@ Template.content.events = {
 Template.trips.trips = function() {
   return Trips.find().fetch();
 };
+Template.trip.miles = function() {
+  return this.distance ? toMiles(this.distance)+'les in' : '';
+}
 Template.trip.events = {
   'click': function() {
     console.log('clicked on ', this)
