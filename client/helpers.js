@@ -122,7 +122,7 @@ function calc_route_for_last_day(day) {
   }
   directionsService.route(request, standardDirectionsDisplay);
   google.maps.event.removeListener(directions_change_listener);
-  directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: false});
+  directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: true});
 
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
