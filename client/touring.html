@@ -12,8 +12,9 @@
 
 <template name="content">
   {{#if has_trip}}
-  <div> <button class='home'>See all the trips</button> </div>
   <div id='content'>
+    <button class='home button'>All trips</button> 
+    <button class='button danger'>Destroy</button> 
     {{> show_trip}}
     {{> days}}
   </div>
@@ -25,6 +26,9 @@
 
 <template name="trips">
   <div id='all_trips'>
+    <div id='new_trip'>
+      <button class='button gigantic'>New Trip</button>
+    </div>
     {{#each trips}}
       {{> trip}}
     {{/each}}

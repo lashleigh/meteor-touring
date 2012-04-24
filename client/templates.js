@@ -3,19 +3,28 @@ Template.content.has_trip = function() {
 };
 Template.content.events = {
   'click button.home': function() {
-  console.log('going home');
     Router.trips();
+  },
+  'click button.danger': function() {
+    if(confirm('are you sure?')) {
+      Trips.remove(Session.get('trip_id'));
+      Router.trips();
+    } 
   }
 }
 Template.trips.trips = function() {
   return Trips.find().fetch();
 };
+Template.trips.events = {
+  'click #new_trip': function() {
+    Router.newTrip();
+  } 
+}
 Template.trip.miles = function() {
   return this.distance ? toMiles(this.distance)+'les in' : '';
 }
 Template.trip.events = {
   'click': function() {
-    console.log('clicked on ', this)
     Session.set('trip_id', this._id);
   }
 }
@@ -77,7 +86,6 @@ Template.day.total_distance = function() {
 }
 Template.day.events = {
   'click' : function (e) {
-    console.log('wtf');
     make_current(this._id)
   },
   'mouseover': function() {
