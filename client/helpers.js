@@ -205,6 +205,7 @@ function make_current(id) {
   map.panTo( markers[id].getPosition());
   directionsDisplay.setMap(null);
   directionsDisplay.setPanel(null);
+  $("#content").stop().animate({scrollTop: Days.findOne(id).order*50}, 400)
 }
 function if_console(message) {
   if (typeof console !== 'undefined')
