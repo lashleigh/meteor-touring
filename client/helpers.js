@@ -81,7 +81,7 @@ function calc_route_with_stopover(day) {
     destination: latlng_from_day(next_day),
     waypoints: waypoints,
     optimizeWaypoints: true,
-    travelMode: google.maps.TravelMode[day.travelMode || 'BICYCLING'],
+    travelMode: google.maps.TravelMode[day.travelMode || Session.get('travelMode')],
     unitSystem: google.maps.UnitSystem['IMPERIAL']
   }
   directionsService.route(request, standardDirectionsDisplay);
@@ -117,7 +117,7 @@ function calc_route_for_last_day(day) {
     destination: latlng_from_day(day),
     waypoints: coords_to_google_waypoints(prev_day),
     optimizeWaypoints: true,
-    travelMode: google.maps.TravelMode[day.travelMode || 'BICYCLING'],
+    travelMode: google.maps.TravelMode[day.travelMode || Session.get('travelMode')],
     unitSystem: google.maps.UnitSystem['IMPERIAL']
   }
   directionsService.route(request, standardDirectionsDisplay);
@@ -148,7 +148,7 @@ function calc_route(day) {
     destination: latlng_from_day(next_day),
     waypoints: coords_to_google_waypoints(day),
     optimizeWaypoints: true,
-    travelMode: google.maps.TravelMode[day.travelMode || 'BICYCLING'],
+    travelMode: google.maps.TravelMode[day.travelMode || Session.get('travelMode')],
     unitSystem: google.maps.UnitSystem['IMPERIAL']
   }
   directionsService.route(request, standardDirectionsDisplay);

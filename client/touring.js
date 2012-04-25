@@ -6,7 +6,7 @@ var map;
 Session.set('trip_id', null);
 Session.set('sort', {order: 1});
 Session.set('current', false);
-Session.set('travelMode', 'BICYCLING');
+Session.set('travelMode', 'DRIVING');
 
 Meteor.subscribe('trips', function () {
   /*if (!Session.get('trip_id')) {
