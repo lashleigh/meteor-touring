@@ -46,7 +46,7 @@
 </template>
 
 <template name="show_trip">
-  <div id="trip_{{_id}}">
+  <div class='editable' id="trip_{{_id}}">
     <span class='title'>
       <h1>{{greeting}}</h1>
     </span>
@@ -76,7 +76,7 @@
   </span>
   <span class="order"> {{order}}</span>
   <span class="distance"> {{miles}}</span>
-  <span class="stop"> {{stop_or_address}} </span>
+  <span class="stop editable"> {{stop_or_address}} </span>
   <span class="wrap insert_wrap"> 
     <span class="insert"></span>
   </span>
