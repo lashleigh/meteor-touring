@@ -39,10 +39,10 @@ Template.show_trip.greeting = function () {
 };
 Template.show_trip.events = {
   'dblclick h1': function() {
-    $('.title h1').attr('contentEditable', true).focus();
+    $('.title h1').attr({contentEditable: true, title: 'Press enter to save'}).focus();
   },
   'blur h1': function() {
-    $('.title h1').attr('contentEditable', null);
+    $('.title h1').attr({contentEditable: null, title: 'Double click to edit'});
   },
   'keydown h1': function(e) {
     if(e.keyCode === 13) {
@@ -107,7 +107,7 @@ Template.day.events = {
     }
   },
   'dblclick .stop': function() {
-    $('#'+this._id+' .stop').attr('contentEditable', true).focus();
+    $('#'+this._id+' .stop').attr({contentEditable: true, title: 'Press enter to save'}).focus();
   },
   'click .destroy_wrap': function(e) {
     e.stopPropagation();
@@ -137,7 +137,7 @@ Template.day.events = {
     }
   },
   'blur .stop': function() {
-    $('#'+this._id+' .stop').attr('contentEditable', null)
+    $('#'+this._id+' .stop').attr({contentEditable: null, title: 'Double click to edit'})
   },
   'keydown .stop': function(e) {
     if(e.keyCode === 13) {
