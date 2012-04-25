@@ -50,7 +50,7 @@ function calc_route_for_first_day(day) {
     destination: latlng_from_day(next_day),  
     waypoints: coords_to_google_waypoints(day),
     optimizeWaypoints: true,
-    travelMode: google.maps.TravelMode[day.travelMode || 'BICYCLING'],
+    travelMode: google.maps.TravelMode[day.travelMode || Session.get('travelMode')],
     unitSystem: google.maps.UnitSystem['IMPERIAL']
   }
   directionsService.route(request, standardDirectionsDisplay);
@@ -169,7 +169,22 @@ function standardDirectionsDisplay(response, status) {
     directionsDisplay.setPanel($('.day_details')[0]);
   } else {
     //Days.remove(Session.get('current'));
-    console.log(status, 'no route found added straight line');
+    console.log(status);
+    var day = Days.findOne(Session.get('current'));
+    var next_day = Days.findOne({order: day.order +1});
+    var prev_day = Days.findOne({order: day.order -1});
+    if(next_day) {
+      var polyline = encodePath([coords_to_google_point(day), coords_to_google_point(next_day)]);
+      var distance = distanceBetweenShort(day, next_day); 
+      console.log(distance)
+      munge_update(day._id, {$set: {distance: distance, polyline: polyline}});
+    } 
+    if(prev_day) {
+      var polyline = encodePath([coords_to_google_point(prev_day), coords_to_google_point(day)]);
+      var distance = distanceBetweenShort(prev_day, day); 
+      console.log(distance)
+      munge_update(prev_day._id, {$set: {distance: distance, polyline: polyline}});
+    }
   }
 }
 function icon(color, symbol) {
@@ -253,8 +268,20 @@ function distanceBetween(p1, p2) {
   var d = R * c;
   return d;
 }
+function midpoint(day, next_day) {
+  console.log(path);
+  /*var p1 = path[0];
+  var p2 = path[1];
+  var dLon = p2.lng() - p1.lng();
+  var Bx = Math.cos(p2.lat()) * Math.cos(dLon);
+  var By = Math.cos(p2.lat()) * Math.sin(dLon);
+  var lat3 = Math.atan2(Math.sin(p1.lat())+Math.sin(p2.lat()),
+      Math.sqrt( (Math.cos(p1.lat())+Bx)*(Math.cos(p1.lat())+Bx) + By*By) ); 
+  var lon3 = p1.lng() + Math.atan2(By, Math.cos(p1.lat()) + Bx); 
+  return (new google.maps.LatLng(lat3, lon3));*/
+}
 function distanceBetweenShort(p1, p2) {
-  var R = 6371; // km
+  var R = 6378100.0; // m
   var x = toRadians(p2.lng-p1.lng) * Math.cos(toRadians(p1.lat+p2.lat)/2);
   var y = toRadians(p2.lat-p1.lat);
   var d = Math.sqrt(x*x + y*y) * R;
