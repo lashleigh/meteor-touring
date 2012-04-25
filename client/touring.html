@@ -39,7 +39,7 @@
   <div class='trip'>
     <h1>{{title}}</h1>
     <div class='details'>
-      <span>{{miles}} {{#if num_days}} {{num_days}} days {{/if}}</span>
+      <span>{{#if num_days}}{{miles}} {{num_days}} days {{else}} Empty trip :-( {{/if}}</span>
     </div>
     <img src={{path}} >
   </div>

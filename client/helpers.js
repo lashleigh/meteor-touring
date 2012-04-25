@@ -265,8 +265,24 @@ function distanceBetween(p1, p2) {
   var d = R * c;
   return d;
 }
-function midpoint(day, next_day) {
-  /*var p1 = path[0];
+function midpoint(d1, d2) {
+  var lat1 = toRadians(d1.lat);
+  var lon1 = toRadians(d1.lng);
+  var lat2 = toRadians(d2.lat);
+  var dLon = toRadians(d2.lng-d1.lng);
+
+  var Bx = Math.cos(lat2) * Math.cos(dLon);
+  var By = Math.cos(lat2) * Math.sin(dLon);
+
+  var lat3 = Math.atan2(Math.sin(lat1)+Math.sin(lat2),
+      Math.sqrt( (Math.cos(lat1)+Bx)*(Math.cos(lat1)+Bx) + By*By) );
+  var lon3 = lon1 + Math.atan2(By, Math.cos(lat1) + Bx);
+  lon3 = (lon3+3*Math.PI) % (2*Math.PI) - Math.PI;  // normalise to -180..+180º
+
+  return new google.maps.LatLng(toDegrees(lat3), toDegrees(lon3));
+}
+/*function midpoint(day, next_day) {
+  var p1 = path[0];
   var p2 = path[1];
   var dLon = p2.lng() - p1.lng();
   var Bx = Math.cos(p2.lat()) * Math.cos(dLon);
@@ -274,8 +290,8 @@ function midpoint(day, next_day) {
   var lat3 = Math.atan2(Math.sin(p1.lat())+Math.sin(p2.lat()),
       Math.sqrt( (Math.cos(p1.lat())+Bx)*(Math.cos(p1.lat())+Bx) + By*By) ); 
   var lon3 = p1.lng() + Math.atan2(By, Math.cos(p1.lat()) + Bx); 
-  return (new google.maps.LatLng(lat3, lon3));*/
-}
+  return (new google.maps.LatLng(lat3, lon3));
+}*/
 function distanceBetweenShort(p1, p2) {
   var R = 6378100.0; // m
   var x = toRadians(p2.lng-p1.lng) * Math.cos(toRadians(p1.lat+p2.lat)/2);
@@ -285,6 +301,9 @@ function distanceBetweenShort(p1, p2) {
 }
 function toRadians(num) {
   return num * Math.PI / 180;
+}
+function toDegrees(num) {
+  return num * 180 / Math.PI;
 }
 function toMiles(num) {
   return (num*0.000621371192).toFixed(1)+' mi';
