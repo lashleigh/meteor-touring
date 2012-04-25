@@ -37,23 +37,39 @@ Template.show_trip.greeting = function () {
     return 'Loading...';
   }
 };
+Template.show_trip.many_days = function() {
+  return Days.find().count() >= 4;
+};
+Template.show_trip.three_days = function() {
+  return Days.find().count() === 3;
+};
+Template.show_trip.two_days = function() {
+  return Days.find().count() === 2;
+};
+Template.show_trip.one_day = function() {
+  return Days.find().count() === 1;
+};
+Template.show_trip.no_days = function() {
+  return Days.find().count() === 0;
+};
+
 Template.show_trip.events = {
-  'dblclick h1': function() {
-    $('.title h1').attr({contentEditable: true, title: 'Press enter to save'}).focus();
+  'dblclick .title': function() {
+    $('.title').attr({contentEditable: true, title: 'Press enter to save'}).focus();
   },
-  'blur h1': function() {
-    $('.title h1').attr({contentEditable: null, title: 'Double click to edit'});
+  'blur .title': function() {
+    $('.title').attr({contentEditable: null, title: 'Double click to edit'});
   },
-  'keydown h1': function(e) {
+  'keydown .title': function(e) {
     if(e.keyCode === 13) {
       e.preventDefault();
       var trip = Trips.findOne(Session.get('trip_id'));
-      var new_title = $('.title h1').text().replace(/(^\s+|\s+$)/g,'');
+      var new_title = $('.title').text().replace(/(^\s+|\s+$)/g,'');
       if(new_title.length > 3) {
         Trips.update(trip._id, {$set : {title: new_title}});
       } else {
         if_console('too short');
-        $('.title h1').text(trip.title).blur();
+        $('.title').text(trip.title).blur();
       }
     }
   }
