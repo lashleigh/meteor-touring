@@ -1,7 +1,7 @@
 /* CSS declarations go here */
 body {
   background: #FAFAFA;
-	line-height: 1.2;
+	line-height: 1.5;
 }
 #new_trip {
   margin: 40px 10px 0;
@@ -10,18 +10,21 @@ body {
 }
 .editable {
   background-color: transparent;
-  -webkit-transition: all 100ms ease-in 100ms;
+  -webkit-transition: all 200ms ease-in 10ms;
 }
 .editable:hover {
   background-color: #FFF7A3;
 }
 .trip {
   float: left;
-  border: 1px dotted;
   margin: 10px;
   padding: 10px;
   width: 300px;
   overflow: hidden;
+  background: #eee;
+  border-radius: 4px;
+  background: #eee;
+  -webkit-transition: all 200ms ease-in 10ms;
   h1 {
     white-space: nowrap;
     overflow: hidden;
@@ -31,11 +34,11 @@ body {
     width: 300px;
     height: 250px;
     overflow: hidden;
+    margin-bottom: -5px;
   }
 }
 .trip:hover {
-  border-style: solid;
-  border-color: #FF7088;
+  background: #FAD6A5; //-webkit-gradient(linear, 0 0, 0 100%, from(hsl(35, 89%, 81%)), to(hsl(20, 100%, 85%)));
   cursor: pointer;
 }
 .days {
