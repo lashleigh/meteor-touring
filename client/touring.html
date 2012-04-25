@@ -48,29 +48,11 @@
 <template name="show_trip">
   <div class='show_trip' title='Double click to edit'>
     <h1 class='editable title'>{{greeting}}</h1>
-    {{#if no_days}}
-      <ul class='help'>
-        <li>Click anywhere on the map to start your trip.</li>
-      </ul>
-    {{/if}}
-    {{#if one_day}}
-      <ul class='help'>
-        <li>Each day gets an automatic address.</li>
-        <li>Keep clicking on the map to append days.</li>
-      </ul>
-    {{/if}}
-    {{#if two_days}}
-      <ul class='help'>
-        <li>Drag the directions to add waypoints to a route.</li>
-      </ul>
-    {{/if}}
-    {{#if three_days}}
-      <ul class='help'>
-        <li>Double click the trip title to make it editable and press enter to save your changes. </li>
-      </ul>
-    {{/if}}
-    {{#if many_days}}
-    {{/if}}
+    <ul class='help'>
+      {{#each messages}}
+      <li>{{this}}</li>
+      {{/each}}
+    </ul>
   </div>
 </template>
 

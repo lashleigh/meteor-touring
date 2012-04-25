@@ -37,22 +37,25 @@ Template.show_trip.greeting = function () {
     return 'Loading...';
   }
 };
-Template.show_trip.many_days = function() {
-  return Days.find().count() >= 4;
-};
-Template.show_trip.three_days = function() {
-  return Days.find().count() === 3;
-};
-Template.show_trip.two_days = function() {
-  return Days.find().count() === 2;
-};
-Template.show_trip.one_day = function() {
-  return Days.find().count() === 1;
-};
-Template.show_trip.no_days = function() {
-  return Days.find().count() === 0;
-};
-
+Template.show_trip.messages = function() {
+  var num_days = Days.find().count();
+  switch(num_days) {
+    case 0: 
+      return ['Click anywhere on the map to start your trip.'];
+      break;
+    case 1: 
+      return ['Each day gets an automatic address.', 'Keep clicking on the map to append days.'];
+      break;
+    case 2: 
+      return ['Drag the directions to add waypoints to a route.'];
+      break;
+    case 3: 
+      return ['Double click the trip title to make it editable and press enter to save your changes.'];
+      break;
+    default:
+      return [];
+  }
+}
 Template.show_trip.events = {
   'dblclick .title': function() {
     $('.title').attr({contentEditable: true, title: 'Press enter to save'}).focus();
