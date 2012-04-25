@@ -169,7 +169,7 @@ function standardDirectionsDisplay(response, status) {
     directionsDisplay.setPanel($('.day_details')[0]);
   } else {
     //Days.remove(Session.get('current'));
-    alert(status);
+    console.log(status, 'no route found added straight line');
   }
 }
 function icon(color, symbol) {
@@ -209,7 +209,7 @@ function geocode(day) {
       munge_update(day._id, {$set: {lat: res[0].geometry.location.lat(), lng:res[0].geometry.location.lng()}});
       static_map();
     } else {
-      alert(status);
+      console.log(status);
     }
   })
 }
@@ -226,7 +226,7 @@ function reverse_geocode(day, latlng) {
       munge_update(day._id, {$set: {address: info.join(', ')}})
       static_map();
     } else {
-      alert(status);
+      console.log(status);
     }
   })
 }
