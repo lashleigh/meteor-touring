@@ -169,20 +169,18 @@ function standardDirectionsDisplay(response, status) {
     directionsDisplay.setPanel($('.day_details')[0]);
   } else {
     //Days.remove(Session.get('current'));
-    console.log(status);
+    if_console(status);
     var day = Days.findOne(Session.get('current'));
     var next_day = Days.findOne({order: day.order +1});
     var prev_day = Days.findOne({order: day.order -1});
     if(next_day) {
       var polyline = encodePath([coords_to_google_point(day), coords_to_google_point(next_day)]);
       var distance = distanceBetweenShort(day, next_day); 
-      console.log(distance)
       munge_update(day._id, {$set: {distance: distance, polyline: polyline}});
     } 
     if(prev_day) {
       var polyline = encodePath([coords_to_google_point(prev_day), coords_to_google_point(day)]);
       var distance = distanceBetweenShort(prev_day, day); 
-      console.log(distance)
       munge_update(prev_day._id, {$set: {distance: distance, polyline: polyline}});
     }
   }
@@ -224,12 +222,11 @@ function geocode(day) {
       munge_update(day._id, {$set: {lat: res[0].geometry.location.lat(), lng:res[0].geometry.location.lng()}});
       static_map();
     } else {
-      console.log(status);
+      if_console(status);
     }
   })
 }
 function reverse_geocode(day, latlng) {
-  console.log(day, latlng);
   geocoder.geocode({location: latlng}, function(res, status) {
     if(status === google.maps.GeocoderStatus.OK) {
       var result = res[0].address_components;
@@ -241,7 +238,7 @@ function reverse_geocode(day, latlng) {
       munge_update(day._id, {$set: {address: info.join(', ')}})
       static_map();
     } else {
-      console.log(status);
+      if_console(status);
     }
   })
 }
@@ -269,7 +266,6 @@ function distanceBetween(p1, p2) {
   return d;
 }
 function midpoint(day, next_day) {
-  console.log(path);
   /*var p1 = path[0];
   var p2 = path[1];
   var dLon = p2.lng() - p1.lng();

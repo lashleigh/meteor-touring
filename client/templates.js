@@ -131,7 +131,6 @@ Template.day.events = {
           make_current(d);
           calc_route_with_stopover(Days.findOne(d));
         } else {
-          console.log('the day doesnt have a polyline yet...');
           var next_day = Days.findOne({order: day.order + 1});
           var half_lat = day.lat - (day.lat - next_day.lat) / 2;
           var half_lng = day.lng - (day.lng - next_day.lng) / 2;
@@ -143,7 +142,7 @@ Template.day.events = {
         }
       }
     } else {
-      console.log('inserting on the last day doesnt make sense');
+      if_console('inserting on the last day doesnt make sense');
     }
   },
   'blur .stop': function() {
