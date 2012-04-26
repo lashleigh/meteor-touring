@@ -13,9 +13,11 @@
 <template name="content">
   {{#if has_trip}}
   <div id='content'>
-    <button class='home button'>All trips</button> 
-    <button class='button danger'>Destroy</button> 
-    {{> show_trip}}
+    <div class='not_days'>
+      <button class='home button'>All trips</button> 
+      <button class='button danger'>Destroy</button> 
+      {{> show_trip}}
+    </div>
     {{> days}}
   </div>
   <div id="map_canvas" ></div>
