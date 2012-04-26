@@ -200,9 +200,10 @@ function make_current(id) {
     markers[Session.get('current')].setDraggable(false);
   }
   Session.set('current', id);
-  markers[id].setIcon(current_icon);
-  markers[id].setDraggable(true);
-  map.panTo( markers[id].getPosition());
+  var m = markers[id];
+  m.setIcon(current_icon);
+  m.setDraggable(true);
+  if(!map.getBounds().contains(m.getPosition())) { map.panTo(m.getPosition());}
   directionsDisplay.setMap(null);
   directionsDisplay.setPanel(null);
   //TODO if the height of a day changes I should definitely change the 52 to $('.day').outerHeight()
