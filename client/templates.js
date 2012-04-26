@@ -85,7 +85,7 @@ Template.days.any_days = function() {
   return !!Days.find().count();
 }
 Template.days.directions = function() {
-  return !!Session.get('directions');
+  return !!Session.get('directions') ? '0px' : '-100px';
 }
 Template.days.selected = function() {
   return Session.equals('travelMode', this.toString()) ? 'selected' : '';
