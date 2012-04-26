@@ -205,7 +205,8 @@ function make_current(id) {
   map.panTo( markers[id].getPosition());
   directionsDisplay.setMap(null);
   directionsDisplay.setPanel(null);
-  $("#content").stop().animate({scrollTop: $('.not_days').height()-$('body').height()/2+(Days.findOne(id).order+1)*50}, 400)
+  //TODO if the height of a day changes I should definitely change the 52 to $('.day').outerHeight()
+  $("#content").stop().animate({scrollTop: $('.not_days').outerHeight()-$('body').outerHeight()/2+(Days.findOne(id).order)*52}, 400);
 }
 function if_console(message) {
   if (typeof console !== 'undefined')
