@@ -59,6 +59,13 @@
 </template>
 
 <template name="days">
+    {{#if directions}}
+      <div class='travel'>
+        {{#each travelMode}}
+        <img id='{{this}}' class='{{selected}}' src='/{{this}}.png'>
+        {{/each}}
+      </div>
+    {{/if}}
 <div>
   <div class="days">
     {{#each days}}

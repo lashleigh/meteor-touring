@@ -11,6 +11,29 @@ body {
 .help {
   padding: 10px 0;
 }
+.travel {
+  position: absolute; 
+  top:0; left:0; 
+  background: #404040; 
+  color: white; 
+  width: 30%; 
+  height: 52px;
+  z-index: 999;
+  text-align: center;
+  img {
+    opacity: 0.5;
+    border: 1px solid;
+    border-radius: 4px;
+    background: #f1f1f1;
+    margin: 5px;
+  }
+  img.selected {
+    opacity: 1.0;
+  }
+  img:hover {
+    background: rgba(53,122,232,0.5);
+  }
+}
 .editable {
   background-color: transparent;
   -webkit-transition: all 200ms ease-in 10ms;

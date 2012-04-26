@@ -84,9 +84,22 @@ Template.days.days = function() {
 Template.days.any_days = function() {
   return !!Days.find().count();
 }
+Template.days.directions = function() {
+  return !!Session.get('directions');
+}
+Template.days.selected = function() {
+  return Session.equals('travelMode', this.toString()) ? 'selected' : '';
+}
+Template.days.travelMode = function() {
+  return ['DRIVING', 'BICYCLING', 'WALKING'];
+}
 Template.days.events = {
   'mouseout': function() {
     if(Session.get('hovered') && (Session.get('hovered') !== Session.get('current'))) markers[Session.get('hovered')].setIcon(null);
+  },
+  'click .travel img': function(e) {
+    Session.set('travelMode', e.currentTarget.id);
+    calc_route_with_stopover(Days.findOne(Session.get('current')));
   }
 }
 Template.day.current = function() {

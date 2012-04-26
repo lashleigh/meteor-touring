@@ -8,6 +8,7 @@ Session.set('sort', {order: 1});
 Session.set('current', false);
 Session.set('travelMode', 'DRIVING');
 Session.set('unit', 'IMPERIAL');
+Session.set('directions', null);
 
 Meteor.subscribe('trips', function () {
   /*if (!Session.get('trip_id')) {
@@ -133,6 +134,7 @@ function theHandle() {
       if(is_current(old_day._id)) {Session.set('current', null)}
       var marker = markers[old_day._id];
       directionsDisplay.setMap(null);
+      Session.set('directions', null);
       if(marker) {
         marker.setMap(null);
         marker.polyline.setMap(null);
