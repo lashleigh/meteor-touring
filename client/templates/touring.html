@@ -14,8 +14,8 @@
   {{#if has_trip}}
   <div id='content'>
     <div class='not_days'>
-      <button class='home button'>All trips</button> 
-      <button class='button danger'>Destroy</button> 
+      <button class='home btn'>All trips</button> 
+      <button class='danger btn btn-danger'>Destroy</button> 
       {{> show_trip}}
     </div>
     {{> days}}
@@ -29,7 +29,7 @@
 <template name="trips">
   <div id='all_trips'>
     <div id='new_trip'>
-      <button class='button gigantic'>New Trip</button>
+      <button class='btn btn-large'>New Trip</button>
     </div>
     {{#each trips}}
       {{> trip}}
@@ -61,7 +61,7 @@
 <template name="days">
 <div class='travel' style='top:{{directions}};' >
   {{#each travelMode}}
-  <img id='{{this}}' class='{{selected}}' src='/{{this}}.png'>
+    <img id='{{this}}' class='{{selected}}' src='/{{this}}.png'>
   {{/each}}
 </div>
 <div>

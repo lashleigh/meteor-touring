@@ -97,9 +97,12 @@ Template.days.events = {
   'mouseout': function() {
     if(Session.get('hovered') && (Session.get('hovered') !== Session.get('current'))) markers[Session.get('hovered')].setIcon(null);
   },
-  'click .travel img': function(e) {
-    Session.set('travelMode', e.currentTarget.id);
-    calc_route_with_stopover(Days.findOne(Session.get('current')));
+  'click .travel': function(e) {
+    var that = $(e.srcElement);
+    if(that.is('img')) {
+      Session.set('travelMode', e.srcElement.id);
+      calc_route_with_stopover(Days.findOne(Session.get('current')));
+    }
   }
 }
 Template.day.current = function() {
@@ -118,7 +121,7 @@ Template.day.total_distance = function() {
   return toMiles(_.reduce(_.pluck(Days.find().fetch(), 'distance'), function(a, b) {return a + b;}, 0));
 }
 Template.day.events = {
-  'click' : function (e) {
+  'click' : function () {
     make_current(this._id)
   },
   'mouseover': function() {
@@ -142,15 +145,13 @@ Template.day.events = {
     $('#'+this._id+' .stop').attr({contentEditable: true, title: 'Press enter to save'}).focus();
   },
   'click .destroy_wrap': function(e) {
-    e.stopPropagation();
     Days.remove({_id: this._id});
     adjust_order_after_remove(this);
   },
-  'click .directions_wrap': function(e) {
+  'click .directions_wrap': function() {
     calc_route_with_stopover(this);
   },
   'click .insert_wrap': function(e) {
-    e.stopPropagation();
     var day = this;
     if(Days.find({order: {$gt: day.order}}).count() !== 0) {
       if(day.polyline) {

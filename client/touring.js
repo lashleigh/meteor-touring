@@ -10,15 +10,7 @@ Session.set('travelMode', 'DRIVING');
 Session.set('unit', 'IMPERIAL');
 Session.set('directions', null);
 
-Meteor.subscribe('trips', function () {
-  /*if (!Session.get('trip_id')) {
-    var trip = Trips.findOne({}, {sort: {title: 1}});
-    if (trip) {
-      Session.set('trip_id', trip._id);
-      Router.setTrip(trip._id);
-    }
-  }*/
-});
+Meteor.subscribe('trips', function () { });
 // Always be subscribed to the days for the selected trip.
 Meteor.autosubscribe(function () {
   var trip_id = Session.get('trip_id');
