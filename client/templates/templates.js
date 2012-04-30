@@ -97,12 +97,13 @@ Template.days.events = {
   'mouseout': function() {
     if(Session.get('hovered') && (Session.get('hovered') !== Session.get('current'))) markers[Session.get('hovered')].setIcon(null);
   },
-  'click .travel': function(e) {
-    var that = $(e.srcElement);
-    if(that.is('img')) {
-      Session.set('travelMode', e.srcElement.id);
-      calc_route_with_stopover(Days.findOne(Session.get('current')));
-    }
+  'click .exit': function(e) {
+    console.log(e.srcElement);
+    exit_directions();
+  },
+  'click .mode': function(e) {
+    Session.set('travelMode', e.srcElement.id);
+    calc_route_with_stopover(Days.findOne(Session.get('current')));
   }
 }
 Template.day.current = function() {

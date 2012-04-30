@@ -194,6 +194,11 @@ function icon(color, symbol) {
 function is_current(id) {
   return Session.get('current') && (Session.get('current') === id)
 }
+function exit_directions() {
+  directionsDisplay.setMap(null);
+  directionsDisplay.setPanel(null);
+  Session.set('directions', null);
+}
 function make_current(id) {
   if(Session.get('current') && markers[Session.get('current')]) {
     markers[Session.get('current')].setIcon(null);
@@ -204,9 +209,7 @@ function make_current(id) {
   m.setIcon(current_icon);
   m.setDraggable(true);
   if(!map.getBounds().contains(m.getPosition())) { map.panTo(m.getPosition());}
-  directionsDisplay.setMap(null);
-  directionsDisplay.setPanel(null);
-  Session.set('directions', null);
+  exit_directions();
   //TODO if the height of a day changes I should definitely change the 52 to $('.day').outerHeight()
   $("#content").stop().animate({scrollTop: $('.not_days').outerHeight()-$('body').outerHeight()/2+(Days.findOne(id).order)*52}, 400);
 }

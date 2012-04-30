@@ -22,7 +22,7 @@ body {
   z-index: 999;
   text-align: center;
   -webkit-transition: all 300ms ease-out 100ms;
-  img {
+  img.mode {
     opacity: 0.5;
     border: 1px solid;
     border-radius: 4px;
@@ -34,6 +34,12 @@ body {
   }
   img:hover {
     background: rgba(53,122,232,0.5);
+    cursor: pointer;
+  }
+  .exit {
+    right: 12px;
+    position: absolute;
+    top: 36px;
   }
 }
 .editable {

@@ -61,8 +61,9 @@
 <template name="days">
 <div class='travel' style='top:{{directions}};' >
   {{#each travelMode}}
-    <img id='{{this}}' class='{{selected}}' src='/{{this}}.png'>
+    <img id='{{this}}' class='mode {{selected}}' src='/{{this}}.png'>
   {{/each}}
+  <button class='exit btn btn-info'>Exit</button>
 </div>
 <div>
   <div class="days">
