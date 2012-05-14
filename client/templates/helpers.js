@@ -59,7 +59,7 @@ function calc_route_for_first_day(day) {
 
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
-    if((Session.get('directions').routes[0].legs[0].end_address !== route.legs[0].end_address)) {
+    if(!_.isEqual(Session.get('directions').routes[0].legs[0].end_location, route.legs[0].end_location)) {
       directionsDisplay.setDirections(Session.get('directions'));
     } else {
       var waypoints = route.legs[0].via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
@@ -89,8 +89,8 @@ function calc_route_with_stopover(day) {
   directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: false})
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
-    if((Session.get('directions').routes[0].legs[0].start_address !== route.legs[0].start_address) ||
-       (Session.get('directions').routes[0].legs[1].end_address   !== route.legs[1].end_address )) {
+    if(!_.isEqual(Session.get('directions').routes[0].legs[0].start_location, route.legs[0].start_location) ||
+       !_.isEqual(Session.get('directions').routes[0].legs[1].end_location, route.legs[1].end_location)) {
       directionsDisplay.setDirections(Session.get('directions'))
     } else {
       var legs_0 = route.legs[0]; var legs_1 = route.legs[1];
@@ -126,7 +126,7 @@ function calc_route_for_last_day(day) {
 
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
-    if((Session.get('directions').routes[0].legs[0].start_address !== route.legs[0].start_address)) {
+    if(!_.isEqual(Session.get('directions').routes[0].legs[0].start_location, route.legs[0].start_location)) {
       directionsDisplay.setDirections(Session.get('directions'));
     } else {
       var waypoints = route.legs[0].via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 

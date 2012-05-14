@@ -98,7 +98,6 @@ Template.days.events = {
     if(Session.get('hovered') && (Session.get('hovered') !== Session.get('current'))) markers[Session.get('hovered')].setIcon(null);
   },
   'click .exit': function(e) {
-    console.log(e.srcElement);
     exit_directions();
   },
   'click .mode': function(e) {
