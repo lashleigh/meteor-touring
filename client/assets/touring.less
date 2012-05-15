@@ -11,25 +11,27 @@ body {
 .help {
   padding: 10px 0;
 }
-.elevation {
+#elevation_wrap {
   position: absolute; 
-  bottom:-200px; 
-  right:0; 
+  bottom: -200px; 
+  right: 0px; 
   background: #ddd; 
+  //padding: 10px;
+  width: 400px; 
+  height: 200px;
+}
+.elevation {
+  position: relative; 
   width: 400px; 
   height: 200px;
   z-index: 999;
+  background: #ddd; 
   -webkit-transition: all 300ms ease-out 100ms;
-  padding: 0px;
-  canvas {
-    top: 10px !important;
-    left: 10px !important;
-  }
 }
 .travel {
   position: absolute; 
-  top:-100px; 
-  left:0; 
+  top: -100px; 
+  left: 0; 
   background: #404040; 
   color: white; 
   width: 30%; 

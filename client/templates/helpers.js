@@ -356,8 +356,9 @@ function draw_with_flot(results, status) {
   var container = document.getElementById("elevator");
   var data = [];
   var verticals = [];
-  var i, x, y;
+  var i, x, y, max;
   var dist = 0;
+  var route = Session.get('directions').routes[0];
   
   for (i = 0; i < results.length-1; i++) {
     x = distanceBetweenGooglePointsShort(results[i].location, results[i+1].location); 
@@ -365,24 +366,25 @@ function draw_with_flot(results, status) {
     dist += x;
     data.push([meters2miles(dist), y]);
   }
-  if(Session.get('directions').routes[0].legs.length >= 2) {
-    var x = meters2miles(Session.get('directions').routes[0].legs[0].distance.value);
-    var max = _.max(data, function(d) {return d[1];})[1];
+  max = _.max(data, function(d) {return d[1];})[1];
+  if(max < 500) max = 500;        
+  if(route.legs.length >= 2) {
+    var x = meters2miles(route.legs[0].distance.value);
     verticals = [[x, 0], [x, max]];
   }
-          
   graph = Flotr.draw(
     container, [ 
       { data : data, lines : { fill : true, show:true }, points : { show : false }  },
       { data: verticals}
     ],{
-      title: 'elevation profile',
+      title: 'elevation',
       xaxis : {
         noTicks : 7,
         //tickFormatter : function (n) { return '('+n+')'; },
         title: 'distance ( mi )'
       },
       yaxis : {
+        max: max,
         title: 'elevation ( ft )'
       },
       grid : {
@@ -394,6 +396,6 @@ function draw_with_flot(results, status) {
         position : 'nw'
       }
   });
-  container.style.position = 'absolute';
-  container.style.padding = '10px';
+  //container.style.position = 'absolute';
+  //container.style.padding = '10px';
 }
