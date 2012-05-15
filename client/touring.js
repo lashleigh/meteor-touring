@@ -33,7 +33,7 @@ Meteor.autosubscribe(function () {
       }
     });
   } else {
-    $('html, body').css({height: null, width: null, overflow: null}) 
+    $('body').css({height: null, width: null, overflow: null}) 
   }
 });
 
@@ -58,7 +58,7 @@ var ToursRouter = Backbone.Router.extend({
             Session.set('trip_id', null);
             Session.set('current', null);
             Session.set('hovered', null);
-            $('html, body').css({height: '', width: '', overflow: ''});
+            $('body').css({height: '', width: '', overflow: ''});
             this.navigate('trips', {trigger: false});
           },
   newTrip: function() {
@@ -76,7 +76,10 @@ Meteor.startup(function() {
   Backbone.history.start({pushState: true});
 });
 function initialize_map() {
-  $('html, body').css({height: '100%', width: '100%', overflow: 'hidden'});
+  $('body').css({height: window.innerHeight+'px', width: window.innerWidth+'px', overflow: 'hidden'});
+  $(window).resize(function(e) {
+    $('body').css({height: window.innerHeight+'px', width: window.innerWidth+'px', overflow: 'hidden'});
+  });
   var myOptions = {
     center: new google.maps.LatLng(45.9931636, -123.9226385),
     zoom: 8,
@@ -112,7 +115,6 @@ function theHandle() {
       if(day.lat !== old_day.lat || day.lng !== old_day.lng) {
         var latlng = new google.maps.LatLng(day.lat, day.lng);
         markers[day._id].setPosition(latlng);
-        console.log('changing', day)
         reverse_geocode(day, latlng); 
         //TODO figure out a better way to limit when calc_route can happen
       }
@@ -170,7 +172,6 @@ function added(new_day, prior_count) {
     var latlng = new google.maps.LatLng(new_day.lat, new_day.lng)
     marker.setPosition(latlng);
     if(!new_day.address) {
-      console.log('adding', new_day)
       reverse_geocode(new_day, latlng);
     }
   } else {

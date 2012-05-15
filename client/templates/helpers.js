@@ -172,7 +172,6 @@ function standardDirectionsDisplay(response, status) {
     directionsDisplay.setPanel($('.day_details')[0]);
   } else {
     //Days.remove(Session.get('current'));
-    console.log(status);
     var day = Days.findOne(Session.get('current'));
     var next_day = Days.findOne({order: day.order +1});
     var prev_day = Days.findOne({order: day.order -1});
@@ -371,11 +370,11 @@ function draw_with_flot(results, status) {
       xaxis : {
         noTicks : 7,
         //tickFormatter : function (n) { return '('+n+')'; },
-        title: 'distance ( mi )'
+        axisLabel: 'distance ( mi )'
       },
       yaxis : {
         max: max,
-        title: 'elevation ( ft )'
+        axisLabel: 'elevation ( ft )'
       },
       grid : {
         verticalLines : false,

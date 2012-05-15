@@ -60,20 +60,15 @@ Template.show_trip.events = {
   'dblclick .title': function() {
     $('.title').attr({contentEditable: true, title: 'Press enter to save'}).focus();
   },
-  'blur .title': function() {
-    $('.title').attr({contentEditable: null, title: 'Double click to edit'});
-  },
-  'keydown .title': function(e) {
-    if(e.keyCode === 13) {
-      e.preventDefault();
-      var trip = Trips.findOne(Session.get('trip_id'));
-      var new_title = $('.title').text().replace(/(^\s+|\s+$)/g,'');
-      if(new_title.length > 3) {
-        Trips.update(trip._id, {$set : {title: new_title}});
-      } else {
-        if_console('too short');
-        $('.title').text(trip.title).blur();
-      }
+  'focusout .title, keydown .title': function(e) {
+    if(e.keyCode && e.keyCode !== 13) return;
+    e.preventDefault();
+    var trip = Trips.findOne(Session.get('trip_id'));
+    var new_title = $('.title').text().replace(/(^\s+|\s+$)/g,'');
+    if(new_title.length > 3) {
+      Trips.update(trip._id, {$set : {title: new_title}});
+    } else {
+      $('.title').text(trip.title).attr({contentEditable: null, title: 'Double click to edit'});
     }
   }
 }
@@ -179,24 +174,19 @@ Template.day.events = {
         }
       }
     } else {
-      if_console('inserting on the last day doesnt make sense');
+      console.log('inserting on the last day doesnt make sense');
     }
   },
-  'blur .stop': function() {
-    $('#'+this._id+' .stop').attr({contentEditable: null, title: 'Double click to edit'})
-  },
-  'keydown .stop': function(e) {
-    if(e.keyCode === 13) {
-      e.preventDefault();
-      var new_stop = $('#'+this._id+' .stop').text().replace(/(^\s+|\s+$)/g,'');
-      if(new_stop.length === 0) {
-        update_by_merging(this, {stop: ''})
-      } else if(new_stop.length > 3) {
-        update_by_merging(this, {stop: new_stop})
-      } else {
-        if_console('too short');
-        $('#'+this._id+' .stop').text(this.stop).blur();
-      }
+  'focusout .stop, keydown .stop': function(e) {
+    if(e.keyCode && e.keyCode !== 13) return;
+    e.preventDefault();
+    var new_stop = $('#'+this._id+' .stop').text().replace(/(^\s+|\s+$)/g,'');
+    if(new_stop.length === 0) {
+      update_by_merging(this, {stop: ''})
+    } else if(new_stop.length > 3) {
+      update_by_merging(this, {stop: new_stop})
+    } else {
+      $('#'+this._id+' .stop').text(this.stop).attr({contentEditable: null, title: 'Double click to edit'});
     }
   }
 };
