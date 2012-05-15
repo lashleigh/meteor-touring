@@ -87,6 +87,9 @@ Template.days.any_days = function() {
 Template.days.directions = function() {
   return !!Session.get('directions') ? '0px' : '-100px';
 }
+Template.days.elevations_bottom = function() {
+  return !!Session.get('directions') ? '0px' : '-200px';
+}
 Template.days.selected = function() {
   return Session.equals('travelMode', this.toString()) ? 'selected' : '';
 }

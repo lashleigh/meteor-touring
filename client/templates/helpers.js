@@ -67,6 +67,7 @@ function calc_route_for_first_day(day) {
       var latlng = route.legs[0].start_location;
       munge_update(day._id, {$set: {polyline: polyline, waypoints: waypoints, lat: latlng.lat(), lng:latlng.lng(), distance: route.legs[0].distance.value }});
       Session.set('directions', directionsDisplay.directions);
+      drawPath();
     }
   }); 
 }
@@ -105,6 +106,7 @@ function calc_route_with_stopover(day) {
                                                    lng: legs_0.end_location.lng(), 
                                                    distance: legs_1.distance.value}});
       Session.set('directions', directionsDisplay.directions);
+      drawPath();
     }
   });
 }
@@ -136,6 +138,7 @@ function calc_route_for_last_day(day) {
         munge_update(day._id, {$set: {lat: route.legs[0].end_location.lat(), lng:route.legs[0].end_location.lng() }});
       }
       Session.set('directions', directionsDisplay.directions);
+      drawPath();
     }
   });
 }
@@ -164,6 +167,7 @@ function calc_route(day) {
 function standardDirectionsDisplay(response, status) {
   if (status == google.maps.DirectionsStatus.OK) {
     Session.set('directions', response);
+    drawPath();
     directionsDisplay.setMap(map)
     directionsDisplay.setDirections(response);
     directionsDisplay.setPanel($('.day_details')[0]);
@@ -192,7 +196,7 @@ function icon(color, symbol) {
   new google.maps.Point(12, 35));
 }
 function is_current(id) {
-  return Session.get('current') && (Session.get('current') === id)
+  return Session.equals('current', id);
 }
 function exit_directions() {
   directionsDisplay.setMap(null);
@@ -249,9 +253,6 @@ function reverse_geocode(day, latlng) {
     }
   })
 }
-function markers_on_waypoints() {
-  var waypoint = directionsDisplay.directions.routes[0].legs[0].via_waypoints;
-}
 function decodePath(path) {
   path = path || '';
   return google.maps.geometry.encoding.decodePath(path);
@@ -299,6 +300,13 @@ function midpoint(d1, d2) {
   var lon3 = p1.lng() + Math.atan2(By, Math.cos(p1.lat()) + Bx); 
   return (new google.maps.LatLng(lat3, lon3));
 }*/
+function distanceBetweenGooglePointsShort(p1, p2) {
+  var R = 6378100.0; // m
+  var x = toRadians(p2.lng()-p1.lng()) * Math.cos(toRadians(p1.lat()+p2.lat())/2);
+  var y = toRadians(p2.lat()-p1.lat());
+  var d = Math.sqrt(x*x + y*y) * R;
+  return d;
+}
 function distanceBetweenShort(p1, p2) {
   var R = 6378100.0; // m
   var x = toRadians(p2.lng-p1.lng) * Math.cos(toRadians(p1.lat+p2.lat)/2);
@@ -312,8 +320,11 @@ function toRadians(num) {
 function toDegrees(num) {
   return num * 180 / Math.PI;
 }
+function meters2miles(num) {
+  return num*0.000621371192;
+}
 function toMiles(num) {
-  return (num*0.000621371192).toFixed(1)+' mi';
+  return meters2miles(num).toFixed(1)+' mi';
 }
 function toKilometer(num) {
   return num / 1000.0;
@@ -329,3 +340,60 @@ function static_map() {
 }
 //#TODO make sure that indexes never get out of whack
 //_.each(d, function(day, idx) {munge_update(day._id, {$set: {order: idx+1}}); })
+function drawPath() {
+  // Create a PathElevationRequest object using the encoded overview_path
+  var path = Session.get('directions').routes[0].overview_path;
+  var pathRequest = {
+    'path': path, 
+    'samples': Math.min(path.length*2, 512)
+  }
+  // Initiate the path request.
+  elevator.getElevationAlongPath(pathRequest, draw_with_flot);
+}
+
+function draw_with_flot(results, status) {
+  if (status !== google.maps.ElevationStatus.OK) return;
+  var container = document.getElementById("elevator");
+  var data = [];
+  var verticals = [];
+  var i, x, y;
+  var dist = 0;
+  
+  for (i = 0; i < results.length-1; i++) {
+    x = distanceBetweenGooglePointsShort(results[i].location, results[i+1].location); 
+    y = (results[i].elevation + results[i+1].elevation) /2;
+    dist += x;
+    data.push([meters2miles(dist), y]);
+  }
+  if(Session.get('directions').routes[0].legs.length >= 2) {
+    var x = meters2miles(Session.get('directions').routes[0].legs[0].distance.value);
+    var max = _.max(data, function(d) {return d[1];})[1];
+    verticals = [[x, 0], [x, max]];
+  }
+          
+  graph = Flotr.draw(
+    container, [ 
+      { data : data, lines : { fill : true, show:true }, points : { show : false }  },
+      { data: verticals}
+    ],{
+      title: 'elevation profile',
+      xaxis : {
+        noTicks : 7,
+        //tickFormatter : function (n) { return '('+n+')'; },
+        title: 'distance ( mi )'
+      },
+      yaxis : {
+        title: 'elevation ( ft )'
+      },
+      grid : {
+        verticalLines : false,
+        backgroundColor : 'white'
+      },
+      HtmlText : false,
+      legend : {
+        position : 'nw'
+      }
+  });
+  container.style.position = 'absolute';
+  container.style.padding = '10px';
+}

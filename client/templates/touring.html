@@ -59,6 +59,7 @@
 </template>
 
 <template name="days">
+<div id='elevator' class='elevation' style='bottom:{{elevations_bottom}};'> </div>
 <div class='travel' style='top:{{directions}};' >
   {{#each travelMode}}
     <img id='{{this}}' class='mode {{selected}}' src='/{{this}}.png'>

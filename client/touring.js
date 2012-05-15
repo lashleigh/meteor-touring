@@ -101,6 +101,7 @@ function initialize_map() {
   directionsService = new google.maps.DirectionsService();
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {}) ;
   geocoder = new google.maps.Geocoder;
+  elevator = new google.maps.ElevationService();
   current_icon = icon('59308F', '');
   hover_icon = icon('8D2D8D', '');
 }
