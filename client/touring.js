@@ -112,6 +112,7 @@ function theHandle() {
       if(day.lat !== old_day.lat || day.lng !== old_day.lng) {
         var latlng = new google.maps.LatLng(day.lat, day.lng);
         markers[day._id].setPosition(latlng);
+        console.log('changing', day)
         reverse_geocode(day, latlng); 
         //TODO figure out a better way to limit when calc_route can happen
       }
@@ -169,6 +170,7 @@ function added(new_day, prior_count) {
     var latlng = new google.maps.LatLng(new_day.lat, new_day.lng)
     marker.setPosition(latlng);
     if(!new_day.address) {
+      console.log('adding', new_day)
       reverse_geocode(new_day, latlng);
     }
   } else {

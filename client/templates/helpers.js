@@ -43,7 +43,7 @@ function coords_to_google_waypoints(day) {
 }
 function calc_route_for_first_day(day) {
   var next_day = Days.findOne({order: day.order+1});
-  if(!next_day) { if_console('there must be only one day...'); return;}
+  if(!next_day) { console.log('there must be only one day...'); return;}
   markers[day._id].polyline.setMap(map);
   var request = {
     origin: latlng_from_day(day),
@@ -112,7 +112,7 @@ function calc_route_with_stopover(day) {
 }
 function calc_route_for_last_day(day) {
   var prev_day = Days.findOne({order: day.order-1});
-  if(!prev_day) { if_console('there must be only one day...'); return;}
+  if(!prev_day) { console.log('there must be only one day...'); return;}
   markers[prev_day._id].polyline.setMap(map);
   var request = {
     origin: latlng_from_day(prev_day),  
@@ -167,13 +167,12 @@ function calc_route(day) {
 function standardDirectionsDisplay(response, status) {
   if (status == google.maps.DirectionsStatus.OK) {
     Session.set('directions', response);
-    drawPath();
     directionsDisplay.setMap(map)
     directionsDisplay.setDirections(response);
     directionsDisplay.setPanel($('.day_details')[0]);
   } else {
     //Days.remove(Session.get('current'));
-    if_console(status);
+    console.log(status);
     var day = Days.findOne(Session.get('current'));
     var next_day = Days.findOne({order: day.order +1});
     var prev_day = Days.findOne({order: day.order -1});
@@ -217,10 +216,6 @@ function make_current(id) {
   //TODO if the height of a day changes I should definitely change the 52 to $('.day').outerHeight()
   $("#content").stop().animate({scrollTop: $('.not_days').outerHeight()-$('body').outerHeight()/2+(Days.findOne(id).order)*52}, 400);
 }
-function if_console(message) {
-  if (typeof console !== 'undefined')
-    console.log(message);
-}
 function update_by_merging(day, data) {
   munge_update(day._id, {$set : data});
 }
@@ -233,7 +228,7 @@ function geocode(day) {
       munge_update(day._id, {$set: {lat: res[0].geometry.location.lat(), lng:res[0].geometry.location.lng()}});
       static_map();
     } else {
-      if_console(status);
+      console.log(status);
     }
   })
 }
@@ -249,7 +244,7 @@ function reverse_geocode(day, latlng) {
       munge_update(day._id, {$set: {address: info.join(', ')}})
       static_map();
     } else {
-      if_console(status);
+      console.log(status);
     }
   })
 }
@@ -341,6 +336,7 @@ function static_map() {
 //#TODO make sure that indexes never get out of whack
 //_.each(d, function(day, idx) {munge_update(day._id, {$set: {order: idx+1}}); })
 function drawPath() {
+  return;
   // Create a PathElevationRequest object using the encoded overview_path
   var path = Session.get('directions').routes[0].overview_path;
   var pathRequest = {
@@ -352,7 +348,8 @@ function drawPath() {
 }
 
 function draw_with_flot(results, status) {
-  if (status !== google.maps.ElevationStatus.OK) return;
+  if (status !== google.maps.ElevationStatus.OK) {console.log('not ok', status); return;}
+  console.log('all ok');
   var container = document.getElementById("elevator");
   var data = [];
   var verticals = [];

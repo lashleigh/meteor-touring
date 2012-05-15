@@ -107,7 +107,6 @@ Template.days.events = {
     if(Session.equals('travelMode', e.srcElement.id)) return;
     Session.set('travelMode', e.srcElement.id);
     calc_route_with_stopover(Days.findOne(Session.get('current')));
-    console.log('calc route with new mode');
   }
 }
 Template.day.current = function() {
