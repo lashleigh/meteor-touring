@@ -336,7 +336,6 @@ function static_map() {
 //#TODO make sure that indexes never get out of whack
 //_.each(d, function(day, idx) {munge_update(day._id, {$set: {order: idx+1}}); })
 function drawPath() {
-  return;
   // Create a PathElevationRequest object using the encoded overview_path
   var path = Session.get('directions').routes[0].overview_path;
   var pathRequest = {
@@ -349,7 +348,43 @@ function drawPath() {
 
 function draw_with_flot(results, status) {
   if (status !== google.maps.ElevationStatus.OK) {console.log('not ok', status); return;}
-  console.log('all ok');
+  var data = [];
+  var verticals = [];
+  var i, x, y, max;
+  var dist = 0;
+  var route = Session.get('directions').routes[0];
+  
+  for (i = 0; i < results.length-1; i++) {
+    x = distanceBetweenGooglePointsShort(results[i].location, results[i+1].location); 
+    y = (results[i].elevation + results[i+1].elevation) /2;
+    dist += x;
+    data.push([meters2miles(dist), y]);
+  }
+  max = _.max(data, function(d) {return d[1];})[1];
+  if(max < 500) { max = 500;} else { max = max+100;}
+  if(route.legs.length >= 2) {
+    var x = meters2miles(route.legs[0].distance.value);
+    verticals = [[x, 0], [x, max]];
+  }
+  $.plot($("#elevator"), [ data, verticals], 
+    {
+      xaxis : {
+        noTicks : 7,
+        //tickFormatter : function (n) { return '('+n+')'; },
+        title: 'distance ( mi )'
+      },
+      yaxis : {
+        max: max,
+        title: 'elevation ( ft )'
+      },
+      grid : {
+        verticalLines : false,
+        backgroundColor : 'white'
+      }
+  });
+}
+function draw_with_flotr2(results, status) {
+  if (status !== google.maps.ElevationStatus.OK) {console.log('not ok', status); return;}
   var container = document.getElementById("elevator");
   var data = [];
   var verticals = [];
