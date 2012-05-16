@@ -101,6 +101,7 @@ Template.days.events = {
   'click .mode': function(e) {
     if(Session.equals('travelMode', e.srcElement.id)) return;
     Session.set('travelMode', e.srcElement.id);
+    munge_update(Session.get('current'), {$set: {travelMode: Session.get('travelMode')}});
     calc_route_with_stopover(Days.findOne(Session.get('current')));
   }
 }

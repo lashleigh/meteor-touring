@@ -119,7 +119,7 @@ function calc_route_for_last_day(day) {
     destination: latlng_from_day(day),
     waypoints: coords_to_google_waypoints(prev_day),
     optimizeWaypoints: true,
-    travelMode: google.maps.TravelMode[day.travelMode || Session.get('travelMode')],
+    travelMode: google.maps.TravelMode[prev_day.travelMode || Session.get('travelMode')],
     unitSystem: google.maps.UnitSystem['IMPERIAL']
   }
   directionsService.route(request, standardDirectionsDisplay);
@@ -344,27 +344,30 @@ function drawPath() {
   // Initiate the path request.
   elevator.getElevationAlongPath(pathRequest, draw_with_flot);
 }
-
 function draw_with_flot(results, status) {
   if (status !== google.maps.ElevationStatus.OK) {console.log('not ok', status); return;}
   var data = [];
   var verticals = [];
-  var i, x, y, max;
+  var i, delta, y, max;
   var dist = 0;
   var route = Session.get('directions').routes[0];
   
+  // The elevation request returns equidistant points
+  delta = distanceBetweenGooglePointsShort(results[0].location, results[1].location); 
   for (i = 0; i < results.length-1; i++) {
-    x = distanceBetweenGooglePointsShort(results[i].location, results[i+1].location); 
     y = (results[i].elevation + results[i+1].elevation) /2;
-    dist += x;
+    dist += delta;
     data.push([meters2miles(dist), y]);
   }
   max = _.max(data, function(d) {return d[1];})[1];
-  if(max < 500) { max = 500;} else { max = max+100;}
+  if(max < 200) { max = 200;} else { max = max+100;}
   if(route.legs.length >= 2) {
     var x = meters2miles(route.legs[0].distance.value);
     verticals = [[x, 0], [x, max]];
   }
+  make_flot_plot(data, max, verticals);
+}
+function make_flot_plot(data, max, verticals) {
   $.plot($("#elevator"), [ data, verticals], 
     {
       xaxis : {
