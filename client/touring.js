@@ -88,16 +88,8 @@ function initialize_map() {
   map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
   new google.maps.BicyclingLayer().setMap(map);
 
-  /*google.maps.event.addListener(map, 'mousemove', function(evt) {
-    var last = Days.findOne({}, {sort: {order : -1}});
-    if(last) {
-      console.log(distanceBetweenShort({lat:evt.latLng.lat(), lng: evt.latLng.lng()}, last));
-    }
-  });*/
   google.maps.event.addListener(map, 'click', function(evt) {
-    var d = munge_insert({lat:evt.latLng.lat(), lng: evt.latLng.lng()});
-    make_current(d);
-    calc_route_for_last_day(Days.findOne(d));
+    manageTrip.appendDay(evt.latLng);
   });
   markers = {};
   directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
@@ -119,7 +111,7 @@ function theHandle() {
         //TODO figure out a better way to limit when calc_route can happen
       }
       if(day.polyline && (day.polyline !== old_day.polyline)) {
-        markers[day._id].polyline.setPath(google.maps.geometry.encoding.decodePath(day.polyline)); 
+        markers[day._id].polyline.setPath(myDecodePath(day.polyline)); 
         markers[day._id].polyline.setMap(map);
       } else if(!day.polyline) {
         markers[day._id].polyline.setMap(null);
@@ -157,15 +149,19 @@ function added(new_day, prior_count) {
     strokeOpacity: 0.5,
     strokeWeight: 3
   });
-  if(new_day.polyline) { marker.polyline.setPath(google.maps.geometry.encoding.decodePath(new_day.polyline)); }
+  if(new_day.polyline) { marker.polyline.setPath(myDecodePath(new_day.polyline)); }
   new google.maps.event.addListener(marker, 'click', function(e) {
     make_current(marker.day_id);
   });
   new google.maps.event.addListener(marker, 'dragend', function(e) {
     var day = Days.findOne(marker.day_id);
+    if(!day) return; 
+    //TODO no day should throw a big error
+    //Changing the day object explicitly means the route calculation can proceed 
+    //without wating for the database to finish updating
     day.lat = e.latLng.lat();
     day.lng = e.latLng.lng();
-    update_by_merging(day, {lat: day.lat, lng: day.lng})
+    manageTrip.updateDay(day._id, {$set : {lat: day.lat, lng: day.lng}});
     calc_route_with_stopover(day);
   });
   if(new_day.lat && new_day.lng) {

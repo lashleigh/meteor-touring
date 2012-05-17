@@ -2366,6 +2366,34 @@
                 if (axisy.options.inverseTransform)
                     maxy = Number.MAX_VALUE;
                 
+                // Modified to ignore the y value
+                if (s.lines.show || s.points.show) {
+                    for (j = 0; j < points.length; j += ps) {
+                        var x = points[j]; 
+                        if (x == null)
+                            continue;
+                        
+                        // For points and lines, the cursor must be within a
+                        // certain distance to the data point
+                        if (x - mx > maxx || x - mx < -maxx)
+                            continue;
+
+                        // We have to calculate distances in pixels, not in
+                        // data units, because the scales of the axes may be different
+                        var dx = Math.abs(axisx.p2c(x) - mouseX),
+                            dist = dx * dx;
+
+                        // use <= to ensure last point takes precedence
+                        // (last generally means on top of)
+                        if (dist < smallestDistance) {
+                            smallestDistance = dist;
+                            item = [i, j / ps];
+                        }
+                    }
+                }
+                // The orginal hover method
+                // You have to get the y position correct as well 
+                /*
                 if (s.lines.show || s.points.show) {
                     for (j = 0; j < points.length; j += ps) {
                         var x = points[j], y = points[j + 1];
@@ -2391,7 +2419,7 @@
                             item = [i, j / ps];
                         }
                     }
-                }
+                }*/
                     
                 if (s.bars.show && !item) { // no other point can be nearby
                     var barLeft = s.bars.align == "left" ? 0 : -s.bars.barWidth/2,
