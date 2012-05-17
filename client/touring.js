@@ -42,6 +42,7 @@ Meteor.autosubscribe(function () {
 var ToursRouter = Backbone.Router.extend({
   routes: {
     "": "trips",
+    "auth/:provider": "auth",
     "trips": "trips",
     "trips/new": "newTrip",
     "trips/:trip_id": "main",
@@ -49,6 +50,11 @@ var ToursRouter = Backbone.Router.extend({
   },
   main: function (trip_id) {
     Session.set("trip_id", trip_id);
+  },
+  auth: function(provider) {
+    Meteor.call('auth', provider, function(error, res) {
+      console.log(error, res);
+    });
   },
   day: function(trip_id, day_id) {
          Session.set("trip_id", trip_id);

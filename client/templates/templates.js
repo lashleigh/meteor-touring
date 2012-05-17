@@ -153,7 +153,7 @@ Template.day.events = {
   'click .insert_wrap': function(e) {
     manageTrip.insertDayAfter(this);
   },
-  'focusout .stop, keydown .stop': function(e) {
+  'blur .stop, keydown .stop': function(e) {
     if(e.keyCode && e.keyCode !== 13) return;
     e.preventDefault();
     var new_stop = $('#'+this._id+' .stop').text().replace(/(^\s+|\s+$)/g,'');

@@ -195,7 +195,7 @@ function make_flot_plot(data, max, verticals) {
     if (item) {
       var pos = plot.getData()[0].data[item.dataIndex][2];
       // Where to insert will depend on where the hover is and whether the current day is the last day.
-      insertDayAfter(Days.findOne(Session.get("current")), pos);
+      manageTrip.insertDayAfter(Days.findOne(Session.get("current")), pos);
     }
   });
 }
