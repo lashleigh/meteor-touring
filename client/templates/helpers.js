@@ -193,9 +193,16 @@ function make_flot_plot(data, max, verticals) {
 
   $("#elevator").bind("plotclick", function (event, pos, item) {
     if (item) {
-      var pos = plot.getData()[0].data[item.dataIndex][2];
-      // Where to insert will depend on where the hover is and whether the current day is the last day.
-      manageTrip.insertDayAfter(Days.findOne(Session.get("current")), pos);
+      var elevation = plot.getData()[0].data; //[0].data[item.dataIndex];
+      var verticals = plot.getData()[1].data;
+      var data = elevation[item.dataIndex];
+      var day = Days.findOne(Session.get('current'));
+      if(verticals.length === 2) {
+        if(data[0] < verticals[0][0]) {
+          day = Days.findOne({order: day.order -1});
+        }
+      }
+      manageTrip.insertDayAfter(day, data[2]);
     }
   });
 }

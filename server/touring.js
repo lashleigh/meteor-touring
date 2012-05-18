@@ -22,10 +22,6 @@ Meteor.publish('days', function(trip_id) {
 });
 
 Meteor.methods({
-  auth: function(provider) {
-    console.log(provider);
-    return 'no auth yet, sorry';
-  }, 
   reset: function() {
     Trips.remove({});
     Days.remove({});
@@ -43,25 +39,6 @@ Meteor.methods({
   }
 })
 Meteor.startup(function () {
-  var require = __meteor_bootstrap__.require;
-  var path = require('path');
-  var fs = require('fs');
-
-  var base = path.resolve('.');
-  if (base == '/') {
-    base = path.dirname(global.require.main.filename);
-  }
-  everyauth = require(path.resolve(base+'/public/node_modules/everyauth'));
-  connect = require(path.resolve(base+'/public/node_modules/connect'));
-  everyauth.twitter
-    .consumerKey('fQourbIsaUU9OcTSdk4LlQ')
-    .consumerSecret('Tbb1xxF0w5wBjFX3zPVpCznbc68EApPE3pklmIY5U')
-    .findOrCreateUser( function (session, accessToken, accessTokenSecret, twitterUserMetadata) {
-      // find or create user logic goes here
-      console.log(session, accessToken, accessTokenSecret, twitterUserMetadata);
-    })
-    .redirectPath('/');
-
   if (Trips.find().count() === 0) {
     Meteor.call('reset');
   }

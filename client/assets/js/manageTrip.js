@@ -30,7 +30,10 @@ var manageTrip = {};
         }
       }
     } else {
-      console.log('inserting on the last day doesnt make sense');
+      var prev_day = Days.findOne({order: day.order -1});
+      if(prev_day) {
+        manageTrip.insertDayAfter(prev_day, atPoint);
+      }
     }
   }
   this.removeDay = function(day) {
