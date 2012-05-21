@@ -40,6 +40,8 @@ function calc_route_with_stopover(day) {
   var next_day = Days.findOne({order: day.order+1});
   if(!prev_day) { calc_route_for_first_day(day); return;}
   if(!next_day) { calc_route_for_last_day(day); return};
+  //markers[prev_day._id].polyline.setMap(map);
+  //markers[day._id].polyline.setMap(map);
   var waypoints = coords_to_google_waypoints(prev_day).concat({location: latlng_from_day(day), stopover: true}, coords_to_google_waypoints(day));
   var request = {
     origin: latlng_from_day(prev_day),  
@@ -136,7 +138,9 @@ function standardDirectionsDisplay(response, status) {
     directionsDisplay.setPanel($('.day_details')[0]);
   } else {
     //Days.remove(Session.get('current'));
+    console.log('directions failure');
     var day = Days.findOne(Session.get('current'));
+    if(!day) return;
     var next_day = Days.findOne({order: day.order +1});
     var prev_day = Days.findOne({order: day.order -1});
     if(next_day) {

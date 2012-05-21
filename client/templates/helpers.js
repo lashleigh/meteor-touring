@@ -24,7 +24,7 @@ function make_current(id) {
   if(!map.getBounds().contains(m.getPosition())) { map.panTo(m.getPosition());}
   exit_directions();
   //TODO if the height of a day changes I should definitely change the 52 to $('.day').outerHeight()
-  $("#content").stop().animate({scrollTop: $('.not_days').outerHeight()-$('body').outerHeight()/2+(Days.findOne(id).order)*52}, 400);
+  //$("#content").stop().animate({scrollTop: $('.not_days').outerHeight()-$('body').outerHeight()/2+(Days.findOne(id).order)*52}, 400);
 }
 function geocode(day) {
   geocoder.geocode({address: day.stop}, function(res, status) {
@@ -137,7 +137,7 @@ function drawPath() {
   elevator.getElevationAlongPath(pathRequest, draw_with_flot);
 }
 function draw_with_flot(results, status) {
-  if (status !== google.maps.ElevationStatus.OK) {console.log('not ok', status); return;}
+  if (status !== google.maps.ElevationStatus.OK) {console.log('elevation failure', status); return;}
   var data = [];
   var verticals = [];
   var i, delta, y, max;
@@ -178,6 +178,7 @@ function make_flot_plot(data, max, verticals) {
         clickable: true
       }
   });
+  $('#elevator').unbind();
   $("#elevator").bind("mouseout", function(e) {
     tempMarker.setMap(null);
   });

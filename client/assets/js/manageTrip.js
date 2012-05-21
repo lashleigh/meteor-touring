@@ -2,9 +2,7 @@ var manageTrip = {};
 (function() {
   this.appendDay = function(point) {
     if(!point) return;
-    var d = munge_insert({lat:point.lat(), lng: point.lng()});
-    make_current(d);
-    calc_route_for_last_day(Days.findOne(d));
+    munge_insert({lat:point.lat(), lng: point.lng()});
   }
   this.insertDayAfter = function(day, atPoint) {
     if(!day) return;
@@ -15,18 +13,14 @@ var manageTrip = {};
           var midpoint = atPoint || path[Math.floor(path.length/2)];
           munge_update({order: {$gte: day.order+1}}, {$inc: {order: 1}}, {multi: true});
           munge_update(day._id, {$set: {waypoints: []}}); //TODO Unfortunate but how else would I keep the waypoint order straight?
-          var d = munge_insert({lat: midpoint.lat(), lng:midpoint.lng(), order: day.order+1});
-          make_current(d);
-          calc_route_with_stopover(Days.findOne(d));
+          munge_insert({lat: midpoint.lat(), lng:midpoint.lng(), order: day.order+1});
         } else {
           var next_day = Days.findOne({order: day.order + 1});
           var half_lat = atPoint ? atPoint.lat() : day.lat - (day.lat - next_day.lat) / 2;
           var half_lng = atPoint ? atPoint.lng() : day.lng - (day.lng - next_day.lng) / 2;
           munge_update({order: {$gte: day.order+1}}, {$inc: {order: 1}}, {multi: true});
           munge_update(day._id, {$set: {waypoints: []}}); //TODO Unfortunate but how else would I keep the waypoint order straight?
-          var d = munge_insert({lat: half_lat, lng:half_lng, order: day.order+1});
-          make_current(d);
-          calc_route_with_stopover(Days.findOne(d));
+          munge_insert({lat: half_lat, lng:half_lng, order: day.order+1});
         }
       }
     } else {
@@ -38,7 +32,8 @@ var manageTrip = {};
   }
   this.removeDay = function(day) {
     if(!day || !day._id) return;
-    Days.remove({_id: day._id});
+    //Days.remove({_id: day._id});
+    Meteor.call('days_remove', {trip_id: Session.get('trip_id'), _id: day._id});
     
     var prev_day = Days.findOne({order: day.order -1});
     var next_day = Days.findOne({order: day.order +1});
@@ -55,8 +50,8 @@ var manageTrip = {};
       munge_update(prev_day._id, {$set: {waypoints: prev_day.waypoints.concat(day.waypoints), polyline: new_poly, distance: prev_day.distance + day.distance}});
     } 
   }
-  this.updateDay = function(select, updates, multi) {
-    munge_update(select, updates, multi);
+  this.updateDay = function(selector, updates, multi) {
+    munge_update(selector, updates, multi);
   }
   function munge_insert(attributes) {
     attributes.created_at = Date.now();
@@ -64,13 +59,23 @@ var manageTrip = {};
     //TODO best way to maintain order => Days.find().count()+1 || _.max(_.pluck(Days.find().fetch(), 'order'))+1
     attributes.order = attributes.order || Days.find().count()+1;
     attributes.waypoints = attributes.waypoints || [];
-    return Days.insert(attributes);
+    //return Days.insert(attributes);
+    var id = Days.insert(attributes);
+    make_current(id);
+    calc_route_with_stopover(Days.findOne(id));
+    
+    /*Meteor.call('days_insert', attributes, function(err, res) {
+      console.log(err, res);
+      add_locally(res);
+      make_current(res._id);
+      calc_route_with_stopover(res);
+    });*/
   }
-  function munge_update(select, updates, multi) {
-    if(_.isString(select)) select = {_id: select};
-    select.trip_id = Session.get('trip_id');
+  function munge_update(selector, updates, multi) {
+    if(_.isString(selector)) selector = {_id: selector};
+    selector.trip_id = Session.get('trip_id');
     updates.$set = updates.$set || {};
     updates.$set.updated_at = Date.now();
-    Days.update(select, updates, multi);
+    Meteor.call('days_update', selector, updates, multi);
   }
 }).apply(manageTrip);

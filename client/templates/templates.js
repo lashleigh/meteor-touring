@@ -74,7 +74,7 @@ Template.show_trip.events = {
 }
 
 Template.days.days = function() {
-  return Days.find({}, {sort: Session.get('sort')});
+return Days.find({}, {sort: {order: 1}});
 };
 Template.days.any_days = function() {
   return !!Days.find().count();

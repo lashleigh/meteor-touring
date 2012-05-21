@@ -25,14 +25,18 @@
     {{> trips}}
   {{/if}}
 </template>
-
 <template name="trips">
   <div id='all_trips'>
-    <div id='new_trip'>
-      <button class='btn btn-large'>New Trip</button>
-    </div>
-    <div id='welcome'>
-      <span></span>
+    <div class='hero-unit'>
+      <h1> Welcome! </h1>
+      <h2>Feel free to mess with the trips listed below, </h2>
+      <p>or, you can make a new one!</p>
+      <p> 
+      There is some obfusication in lieu of authentication.
+      Just be aware that anybody you share your trips url with will have full editing privlidges. 
+      Proper authentication is on the way.
+      </p>
+      <button id='new_trip' class='btn btn-large btn-primary'>New Trip</button>
     </div>
     {{#each trips}}
       {{> trip}}
@@ -53,7 +57,7 @@
 <template name="show_trip">
   <div class='show_trip' title='Double click to edit'>
     <h1 class='editable title'>{{greeting}}</h1>
-    <ul class='help'>
+    <ul class='help unstyled'>
       {{#each messages}}
       <li>{{this}}</li>
       {{/each}}

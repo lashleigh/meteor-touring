@@ -1,20 +1,15 @@
-var Trips = new Meteor.Collection('trips');
-var Days  = new Meteor.Collection('days');
-
 var map;
-//ID of currently selected trip
 Session.set('trip_id', null);
-Session.set('sort', {order: 1});
-Session.set('current', false);
+Session.set('current', null);
 Session.set('travelMode', 'DRIVING');
 Session.set('unit', 'IMPERIAL');
 Session.set('directions', null);
 
-Meteor.subscribe('trips');
 // Always be subscribed to the days for the selected trip.
 Meteor.autosubscribe(function () {
   var trip_id = Session.get('trip_id');
   if (trip_id) {
+    Meteor.subscribe('trips', trip_id);
     Router.setTrip(Session.get('trip_id'));
     Meteor.subscribe('days', trip_id, function() {
       initialize_map();
@@ -34,6 +29,7 @@ Meteor.autosubscribe(function () {
     });
   } else {
     $('body').css({height: null, width: null, overflow: null}) 
+    Meteor.subscribe('trips');
   }
 });
 
@@ -42,7 +38,6 @@ Meteor.autosubscribe(function () {
 var ToursRouter = Backbone.Router.extend({
   routes: {
     "": "trips",
-    "auth/:provider": "auth",
     "trips": "trips",
     "trips/new": "newTrip",
     "trips/:trip_id": "main",
@@ -50,11 +45,6 @@ var ToursRouter = Backbone.Router.extend({
   },
   main: function (trip_id) {
     Session.set("trip_id", trip_id);
-  },
-  auth: function(provider) {
-    Meteor.call('auth', provider, function(error, res) {
-      console.log(error, res);
-    });
   },
   day: function(trip_id, day_id) {
          Session.set("trip_id", trip_id);
@@ -141,6 +131,10 @@ function theHandle() {
 
 function added(new_day, prior_count) {
   if(markers[new_day._id]) return;
+  add_locally(new_day);
+}
+ 
+function add_locally(new_day) {
   var marker = new google.maps.Marker({
     map: map, 
     draggable: false, 
@@ -179,5 +173,4 @@ function added(new_day, prior_count) {
   } else {
     geocode(new_day);
   }
-} 
-
+}
