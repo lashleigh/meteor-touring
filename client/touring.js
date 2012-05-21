@@ -109,22 +109,19 @@ function theHandle() {
       if(day.polyline && (day.polyline !== old_day.polyline)) {
         markers[day._id].polyline.setPath(myDecodePath(day.polyline)); 
         markers[day._id].polyline.setMap(map);
-      } else if(!day.polyline) {
-        markers[day._id].polyline.setMap(null);
-      }
+      } 
     },
     removed: function(old_day, at_index) {
       Session.set('hovered', null);
       if(is_current(old_day._id)) {Session.set('current', null)}
-      var marker = markers[old_day._id];
       directionsDisplay.setMap(null);
       Session.set('directions', null);
-      if(marker) {
-        marker.setMap(null);
-        marker.polyline.setMap(null);
-        google.maps.event.clearInstanceListeners(marker);
-        delete markers[old_day._id];
-      }
+      var marker = markers[old_day._id];
+      if(!marker) return;
+      marker.setMap(null);
+      marker.polyline.setMap(null);
+      google.maps.event.clearInstanceListeners(marker);
+      delete markers[old_day._id];
     }
   });
 }

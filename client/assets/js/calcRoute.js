@@ -4,11 +4,9 @@ var rendererOptions = {
   preserveViewport: false,
   markerOptions: {draggable: false}
 };
-
 function calc_route_for_first_day(day) {
   var next_day = Days.findOne({order: day.order+1});
   if(!next_day) { console.log('there must be only one day...'); return;}
-  markers[day._id].polyline.setMap(map);
   var request = {
     origin: latlng_from_day(day),
     destination: latlng_from_day(next_day),  
@@ -40,8 +38,6 @@ function calc_route_with_stopover(day) {
   var next_day = Days.findOne({order: day.order+1});
   if(!prev_day) { calc_route_for_first_day(day); return;}
   if(!next_day) { calc_route_for_last_day(day); return};
-  //markers[prev_day._id].polyline.setMap(map);
-  //markers[day._id].polyline.setMap(map);
   var waypoints = coords_to_google_waypoints(prev_day).concat({location: latlng_from_day(day), stopover: true}, coords_to_google_waypoints(day));
   var request = {
     origin: latlng_from_day(prev_day),  
@@ -56,9 +52,33 @@ function calc_route_with_stopover(day) {
   directionsDisplay.setOptions({markerOptions: {draggable: true}, preserveViewport: false})
   directions_change_listener = google.maps.event.addListener(directionsDisplay, 'directions_changed', function() {
     var route = directionsDisplay.directions.routes[0];
-    if(!_.isEqual(Session.get('directions').routes[0].legs[0].start_location, route.legs[0].start_location) ||
-       !_.isEqual(Session.get('directions').routes[0].legs[1].end_location, route.legs[1].end_location)) {
-      directionsDisplay.setDirections(Session.get('directions'))
+    if(!_.isEqual(Session.get('directions').routes[0].legs[0].start_location, route.legs[0].start_location)) {
+      if(prev_day.order === 1) {
+        var legs_0 = route.legs[0]; 
+        var waypoints_0 = legs_0.via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
+        var polyline_0  = myEncodePath(_.flatten(_.pluck(legs_0.steps, 'path')));
+        manageTrip.updateDay(prev_day._id, {$set: {polyline: polyline_0, 
+                                                   waypoints: waypoints_0, 
+                                                   lat:legs_0.start_location.lat(), 
+                                                   lng: legs_0.start_location.lng(), 
+                                                   distance: legs_0.distance.value}});
+        Session.set('directions', directionsDisplay.directions);
+        drawPath();
+      } else {
+        directionsDisplay.setDirections(Session.get('directions'))
+      }
+    } else if(!_.isEqual(Session.get('directions').routes[0].legs[1].end_location, route.legs[1].end_location)) {
+      if(next_day.order === Days.find().count()) {
+        var legs_1 = route.legs[1];
+        var waypoints_1 = legs_1.via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
+        var polyline_1  = myEncodePath(_.flatten(_.pluck(legs_1.steps, 'path')));
+        manageTrip.updateDay(day._id, {$set: {polyline: polyline_1, waypoints: waypoints_1, distance: legs_1.distance.value}});
+        manageTrip.updateDay(next_day._id, {$set: {lat: legs_1.end_location.lat(), lng: legs_1.end_location.lng()}});
+        Session.set('directions', directionsDisplay.directions);
+        drawPath();
+      } else {
+        directionsDisplay.setDirections(Session.get('directions'))
+      }
     } else {
       var legs_0 = route.legs[0]; var legs_1 = route.legs[1];
       var waypoints_0 = legs_0.via_waypoints.map(function(p) {return {lat: p.lat(), lng: p.lng()};}) 
@@ -66,7 +86,7 @@ function calc_route_with_stopover(day) {
       var polyline_0  = myEncodePath(_.flatten(_.pluck(legs_0.steps, 'path')));
       var polyline_1  = myEncodePath(_.flatten(_.pluck(legs_1.steps, 'path')));
       manageTrip.updateDay(prev_day._id, {$set: {polyline: polyline_0, waypoints: waypoints_0, distance: legs_0.distance.value}});
-      manageTrip.updateDay(Session.get('current'), {$set: {polyline: polyline_1, 
+      manageTrip.updateDay(day._id, {$set: {polyline: polyline_1, 
                                                    waypoints: waypoints_1, 
                                                    lat:legs_0.end_location.lat(), 
                                                    lng: legs_0.end_location.lng(), 
@@ -79,7 +99,6 @@ function calc_route_with_stopover(day) {
 function calc_route_for_last_day(day) {
   var prev_day = Days.findOne({order: day.order-1});
   if(!prev_day) { console.log('there must be only one day...'); return;}
-  markers[prev_day._id].polyline.setMap(map);
   var request = {
     origin: latlng_from_day(prev_day),  
     destination: latlng_from_day(day),
@@ -111,7 +130,6 @@ function calc_route_for_last_day(day) {
 function calc_route(day) {
   var next_day = Days.findOne({order: day.order+1});
   if(!next_day) {  calc_route_for_last_day(next_day); return};
-  markers[day._id].polyline.setMap(map);
   var request = {
     origin: latlng_from_day(day),  
     destination: latlng_from_day(next_day),
