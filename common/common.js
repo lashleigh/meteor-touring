@@ -21,7 +21,7 @@ Meteor.methods({
                 },
   trips_update: function(id, updates) {
                   if(!id) return;
-                  Trips.update({_id: t._id}, updates);
+                  Trips.update({_id: id}, updates);
                 },
   trips_remove: function(id) {
                   if(!id) return;

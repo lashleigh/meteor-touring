@@ -7,8 +7,7 @@ Template.content.events = {
   },
   'click button.danger': function() {
     if(confirm('are you sure?')) {
-      Trips.remove(Session.get('trip_id'));
-      Days.remove({trip_id: Session.get('trip_id')});
+      Meteor.call('trips_remove', Session.get('trip_id'));
       Router.trips();
     } 
   }
@@ -66,7 +65,7 @@ Template.show_trip.events = {
     var trip = Trips.findOne(Session.get('trip_id'));
     var new_title = $('.title').text().replace(/(^\s+|\s+$)/g,'');
     if(new_title.length > 3) {
-      Trips.update(trip._id, {$set : {title: new_title}});
+      Meteor.call('trips_update', trip._id, {$set : {title: new_title}});
     } else {
       $('.title').text(trip.title).attr({contentEditable: null, title: 'Double click to edit'});
     }
