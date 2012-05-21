@@ -32,7 +32,6 @@ var manageTrip = {};
   }
   this.removeDay = function(day) {
     if(!day || !day._id) return;
-    //Days.remove({_id: day._id});
     Meteor.call('days_remove', {trip_id: Session.get('trip_id'), _id: day._id});
     
     var prev_day = Days.findOne({order: day.order -1});

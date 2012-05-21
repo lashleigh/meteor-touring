@@ -137,8 +137,7 @@ function standardDirectionsDisplay(response, status) {
     directionsDisplay.setDirections(response);
     directionsDisplay.setPanel($('.day_details')[0]);
   } else {
-    //Days.remove(Session.get('current'));
-    console.log('directions failure');
+    console.log('directions failure', status);
     var day = Days.findOne(Session.get('current'));
     if(!day) return;
     var next_day = Days.findOne({order: day.order +1});

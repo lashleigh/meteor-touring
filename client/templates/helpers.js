@@ -124,7 +124,7 @@ function static_map() {
   var path = myEncodePath(_.map(_.filter(days, function(d) {return d.order % mod === 0;}), function(d) {return latlng_from_day(d)}));
   var full_path =  basic+path+"&sensor=false";
   var distance = _.reduce(_.pluck(_.filter(days, function(d) {return !!d.distance}), 'distance'), function(a, b) {return a+ b; }, 0);
-  Trips.update(Session.get('trip_id'), {$set: {path: full_path, num_days: days.length, distance: distance}});
+  Meteor.call('trips_update', Session.get('trip_id'), {$set: {path: full_path, num_days: days.length, distance: distance}});
 }
 function drawPath() {
   // Create a PathElevationRequest object using the encoded overview_path
