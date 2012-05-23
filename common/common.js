@@ -17,10 +17,15 @@ var Days = new Meteor.Collection('days');
 
 Meteor.methods({
   trips_insert: function(attributes) {
+                  attributes = attributes || {};
+                  attributes.title = 'Something Awesome';
+                  attributes.created_at = Date.now();
                   return Trips.insert(attributes);
                 },
   trips_update: function(id, updates) {
                   if(!id) return;
+                  if(!updates.$set) updates.$set = {}
+                  updates.$set.updated_at = Date.now();
                   Trips.update({_id: id}, updates);
                 },
   trips_remove: function(id) {

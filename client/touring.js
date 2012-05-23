@@ -58,8 +58,11 @@ var ToursRouter = Backbone.Router.extend({
             this.navigate('trips', {trigger: false});
           },
   newTrip: function() {
-    var t = Trips.insert({title: 'something awesome'});
-    Router.setTrip(t);
+    Meteor.call('trips_insert', function(err, res) {
+      console.log(err, res);
+      if(err || !res) return;
+      Router.setTrip(res);
+    });
   },
   setTrip: function (trip_id) {
     this.navigate('trips/'+trip_id, true);
@@ -109,7 +112,9 @@ function theHandle() {
       if(day.polyline && (day.polyline !== old_day.polyline)) {
         markers[day._id].polyline.setPath(myDecodePath(day.polyline)); 
         markers[day._id].polyline.setMap(map);
-      } 
+      } else {
+        markers[day._id].polyline.setMap(null);
+      }
     },
     removed: function(old_day, at_index) {
       Session.set('hovered', null);

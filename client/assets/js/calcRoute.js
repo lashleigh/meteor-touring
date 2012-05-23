@@ -158,6 +158,7 @@ function standardDirectionsDisplay(response, status) {
     console.log('directions failure', status);
     var day = Days.findOne(Session.get('current'));
     if(!day) return;
+    //if(day.travelMode !== 'DRIVING') { manageTrip.updateDay(day._id, {$set: {travelMode: 'DRIVING'}}); return; }
     var next_day = Days.findOne({order: day.order +1});
     var prev_day = Days.findOne({order: day.order -1});
     if(next_day) {

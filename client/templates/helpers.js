@@ -30,7 +30,6 @@ function geocode(day) {
   geocoder.geocode({address: day.stop}, function(res, status) {
     if(status === google.maps.GeocoderStatus.OK) {
       manageTrip.updateDay(day._id, {$set: {lat: res[0].geometry.location.lat(), lng:res[0].geometry.location.lng()}});
-      static_map();
     } else {
       console.log(status);
     }
@@ -46,7 +45,6 @@ function reverse_geocode(day, latlng) {
           if(result[i].types[0]=="locality"){info.unshift(result[i].long_name)}
       }
       manageTrip.updateDay(day._id, {$set: {address: info.join(', ')}})
-      static_map();
     } else {
       console.log(status);
     }

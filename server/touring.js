@@ -6,6 +6,9 @@ Meteor.publish('days', function(trip_id) {
   return Days.find({trip_id: trip_id});
 });
 Meteor.methods({
+  pluck: function(name) {
+    return _.pluck(Trips.find().fetch(), name);
+  },
   days_insert: function(attributes) {
                  if(!attributes.trip_id) return;
                  var id = Days.insert(attributes);
