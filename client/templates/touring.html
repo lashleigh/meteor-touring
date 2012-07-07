@@ -7,9 +7,12 @@
 </head>
 
 <body>
+  {{> header}}
   {{> content}}
 </body>
 
+<template name="header">
+</template>
 <template name="content">
   {{#if has_trip}}
   <div id='content'>

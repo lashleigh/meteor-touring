@@ -7,6 +7,7 @@ Meteor.publish('days', function(trip_id) {
 });
 Meteor.methods({
   pluck: function(name) {
+    //console.log(Meteor._RemoteCollectionDriver.mongo.db);
     return _.pluck(Trips.find().fetch(), name);
   },
   days_insert: function(attributes) {
