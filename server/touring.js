@@ -5,6 +5,7 @@ Meteor.publish('trips', function(trip_id) {
 Meteor.publish('days', function(trip_id) {
   return Days.find({trip_id: trip_id});
 });
+
 Meteor.methods({
   pluck: function(name) {
     //console.log(Meteor._RemoteCollectionDriver.mongo.db);
