@@ -14,6 +14,7 @@ Meteor.autosubscribe(function () {
     Router.setTrip(Session.get('trip_id'));
     Meteor.subscribe('days', trip_id, function() {
       initialize_map();
+      handle && handle.stop();
       handle = generate_handler();
       if(Days.find().count() >= 2 && map) {
         var bounds = new google.maps.LatLngBounds;
@@ -35,8 +36,13 @@ Meteor.autosubscribe(function () {
 });
 
 function initialize_map() {
+  // ------------------------------
+  // Setting up a bunch of globals
+  // I know, I know globals are evil
+  // ------------------------------
   $('body').css({height: window.innerHeight+'px', width: window.innerWidth+'px', overflow: 'hidden'});
-  $(window).resize(function(e) {
+  $(window).unbind('resize');
+  $(window).bind('resize', function(e) {
     $('body').css({height: window.innerHeight+'px', width: window.innerWidth+'px', overflow: 'hidden'});
   });
   var myOptions = {

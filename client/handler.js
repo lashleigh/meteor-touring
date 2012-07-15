@@ -18,6 +18,7 @@ function generate_handler() {
 }
 
 function added(new_day, prior_count) {
+  console.log('added', new_day, prior_count);
   if(markers[new_day._id]) return;
   add_locally(new_day);
 }

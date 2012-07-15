@@ -20,10 +20,10 @@ Template.trips.events = {
     Router.newTrip();
   } 
 }
-Template.trip.miles = function() {
+Template.trip_thumbnail.miles = function() {
   return this.distance ? toMiles(this.distance)+'les in' : '';
 }
-Template.trip.events = {
+Template.trip_thumbnail.events = {
   'click': function() {
     Session.set('trip_id', this._id);
   }

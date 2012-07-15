@@ -7,12 +7,9 @@
 </head>
 
 <body>
-  {{> header}}
   {{> content}}
 </body>
 
-<template name="header">
-</template>
 <template name="content">
   {{#if has_trip}}
   <div id='content'>
@@ -32,8 +29,8 @@
   <div id='all_trips'>
     <div class='hero-unit'>
       <h1> Welcome! </h1>
-      <h2>Feel free to mess with the trips listed below, </h2>
-      <p>or, you can make a new one!</p>
+      <h2>Feel free to clone one of the trips listed below, </h2>
+      <p>or, you can start from scratch!</p>
       <p> 
       There is some obfuscation in lieu of authentication.
       Just be aware that anybody you share your trips url with will have full editing privileges. 
@@ -42,13 +39,13 @@
       <button id='new_trip' class='btn btn-large btn-primary'>New Trip</button>
     </div>
     {{#each trips}}
-      {{> trip}}
+      {{> trip_thumbnail}}
     {{/each}}
   </div>
 </template>
 
-<template name="trip">
-  <div class='trip'>
+<template name="trip_thumbnail">
+  <div class='trip_thumbnail'>
     <h1>{{title}}</h1>
     <div class='details'>
       <span>{{#if num_days}}{{miles}} {{num_days}} days {{else}} Empty trip :-( {{/if}}</span>
