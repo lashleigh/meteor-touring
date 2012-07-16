@@ -42,7 +42,7 @@ Meteor.autosubscribe(function () {
 function initialize_map() {
   // ------------------------------
   // Setting up a bunch of globals
-  // I know, I know globals are evil
+  // I know, globals are evil, whatever
   // ------------------------------
   $('body').css({height: window.innerHeight+'px', width: window.innerWidth+'px', overflow: 'hidden'});
   $(window).unbind('resize');
