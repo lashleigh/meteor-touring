@@ -1,10 +1,14 @@
 var map;
 var handle;
+var places = {};
 Session.set('trip_id', null);
 Session.set('current', null);
 Session.set('travelMode', 'DRIVING');
 Session.set('unit', 'IMPERIAL');
 Session.set('directions', null);
+
+var Places = new Meteor.Collection(null);
+places_handler();
 
 // Always be subscribed to the days for the selected trip.
 Meteor.autosubscribe(function () {

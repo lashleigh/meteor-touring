@@ -184,3 +184,20 @@ function coords_to_google_waypoints(day) {
 function latlng_from_day(day) {
   return new google.maps.LatLng(day.lat, day.lng);
 }
+function array_from_google_point(point) {
+  return [point.lat(), point.lng()];
+}
+function stringify_bounds(b) {
+  b = b || map.getBounds();
+  var obj = {
+          northeast: {
+            lat: b.getNorthEast().lat(),
+            lng: b.getNorthEast().lng(),
+          },
+          southwest: {
+            lat: b.getSouthWest().lat(),
+            lng: b.getSouthWest().lng(),
+          } 
+        }
+  return obj.southwest.lat+','+obj.southwest.lng+'|'+obj.northeast.lat+','+obj.northeast.lng; 
+}

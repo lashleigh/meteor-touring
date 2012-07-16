@@ -10,6 +10,22 @@ Template.content.events = {
       Meteor.call('trips_remove', Session.get('trip_id'));
       Router.trips();
     } 
+  },
+  'click #search button.search-places': function(ev) {
+    Places.remove({});
+    Meteor.call('places', {keyword: $('#search input').val(), location: array_from_google_point(map.getCenter())}, function(err, res) {
+      _.each(res.results, function(r) { Places.insert(r);});
+    }); 
+  },
+  'click #search button.search-geocode': function(ev) {
+    Places.remove({});
+    var address = $('#search input').val();
+    var radius = google.maps.geometry.spherical.computeDistanceBetween(map.getBounds().getSouthWest(), map.getCenter());
+    Math.min(50000, radius);
+    if(address.length < 4) return;
+    Meteor.call('geocode', {address: address, bounds: stringify_bounds(), radius: radius}, function(err, res) {
+      _.each(res.results, function(r) { Places.insert(r);});
+    }); 
   }
 }
 Template.trips.trips = function() {
