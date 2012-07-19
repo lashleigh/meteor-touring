@@ -4,14 +4,14 @@ Once upon a time I spent a year bicycling around the country. It was a
 very wonderful experience, but I wished every day for a better route 
 planning tool. So, here it is! Or here it will be eventually. 
 
-##Coming soon
+###Coming soon
 * Elevation data caching
 * Authentication (I've testing out the meteor auth branch - it's pretty slick)
 * Next location search box
 * Proper tutorial
 
 
-## NSFAQ
+### NSFAQ
 
 * Why are you using meteor?
  * Well, I actually started this project as a rails app, it's here on 
